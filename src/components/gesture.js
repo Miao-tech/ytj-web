@@ -44,22 +44,25 @@ function Gesture() {
 
 
     return (
-        <div className="mx-auto px-4 sm:container py-10 mt-[10px]" style={{
-            backgroundColor: "#f6f6f6",
-            borderRadius: "10px"
-        }}>
-            <div className="mx-auto max-w-7xl px-6 lg:px-8" >
-                <dl className="grid grid-cols-1 gap-x-8 gap-y-24 text-center lg:grid-cols-3">
-                    <div className="mx-auto flex max-w-xs flex-col">
-                        <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-2xl">手势传感器: {gestureSensorText}</dd>
-                    </div>
-                    <div className="mx-auto flex max-w-xs flex-col">
-                        <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-2xl">红外传感器: {infraredSensor} cm</dd>
-                    </div>
-                    <div className="mx-auto flex max-w-xs flex-col">
-                        <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-2xl">光强度传感器: {lightIntensitySensor} Lux</dd>
-                    </div>
-                </dl>
+        <div>
+            <div className='mb-2'>
+                <h2 className="text-xl font-semibold text-gray-900">传感器</h2>
+            </div>
+
+            <div className='grid grid-cols-3 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border'>
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <span class="iconfont icon-a-shoushoushi" style={{ fontSize: '40px' }}></span>
+                    <div style={{ fontSize: '16px' }}>手势传感器: {gestureSensorText}</div>
+                </div>
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <span class="iconfont icon-act006" style={{ fontSize: '40px' }}></span>
+                    <div style={{ fontSize: '16px' }}>红外传感器: {infraredSensor} cm</div>
+                </div>
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <span class="iconfont icon-a-cellimage_huaban1fuben94" style={{ fontSize: '40px' }}></span>
+                    <div style={{ fontSize: '16px' }}>光强度传感器: {lightIntensitySensor} Lux</div>
+                </div>
+
             </div>
         </div>
     );

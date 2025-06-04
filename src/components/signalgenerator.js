@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import wsManager from '../io';
+import { APISetWaveform, APISignalGeneratorStop } from '../request/api';
 
 function SignalGenerator() {
     // 从 Redux store 中获取信号发生器数据
@@ -20,19 +20,19 @@ function SignalGenerator() {
         { value: 1, label: '1 Hz' },
         { value: 100, label: '100 Hz' },
     ];
-    
+
     const [waveform, setWaveform] = useState('sine');
     const [frequency, setFrequency] = useState(1);
-    const [amplitude, setAmplitude] = useState(1.0);
-    const [dcOffset, setDcOffset] = useState(0.0);
+    const [amplitude] = useState(1.0);
+    const [dcOffset] = useState(0.0);
     const [outputEnabled, setOutputEnabled] = useState(false);
-    const [customFrequency, setCustomFrequency] = useState('1000');
+    // const [customFrequency, setCustomFrequency] = useState('1000');
 
     // 波形选项
     const waveformOptions = [
-        { value: 'sine', label: '正弦波', icon: '〜' },
-        { value: 'square', label: '方波', icon: '⊏' },
-        { value: 'triangle', label: '三角波', icon: '△' }
+        { value: 'sine', label: '正弦波', icon: 'icon-zhengxianquxian' },
+        { value: 'square', label: '方波', icon: 'icon-fangbo-01' },
+        { value: 'triangle', label: '三角波', icon: 'icon-bolangxian' }
     ];
 
     // 格式化频率显示
@@ -46,77 +46,95 @@ function SignalGenerator() {
         const height = 80;
         const numPoints = 100;
         const points = [];
-        
+
         for (let i = 0; i <= numPoints; i++) {
             const x = (i / numPoints) * width;
             let y = height / 2;
-            
+
             const t = (i / numPoints) * Math.PI * 4;
             const amplitude_px = (height / 2 - 5) * (amplitude / 5);
             const offset_px = dcOffset * height / 6;
-            
-            switch (waveform) {
-                case 'sine':
-                    y = height / 2 + Math.sin(t) * amplitude_px + offset_px;
-                    break;
-                case 'square':
-                    y = height / 2 + (Math.sin(t) > 0 ? -amplitude_px : amplitude_px) + offset_px;
-                    break;
-                case 'triangle':
-                    y = height / 2 + ((Math.abs(((t / Math.PI) % 2) - 1) * 2 - 1) * amplitude_px) + offset_px;
-                    break;
+
+            if (waveform === 'sine') {
+                y = height / 2 + Math.sin(t) * amplitude_px + offset_px;
+            } else if (waveform === 'square') {
+                y = height / 2 + (Math.sin(t) > 0 ? -amplitude_px : amplitude_px) + offset_px;
+            } else if (waveform === 'triangle') {
+                y = height / 2 + ((Math.abs(((t / Math.PI) % 2) - 1) * 2 - 1) * amplitude_px) + offset_px;
             }
-            
+
             points.push({ x: Math.floor(x), y: Math.max(0, Math.min(height, Math.floor(y))) });
         }
-        
-        const pathCommands = points.map((point, i) => 
+
+        const pathCommands = points.map((point, i) =>
             `${i === 0 ? 'M' : 'L'}${point.x},${point.y}`
         ).join(' ');
-        
+
         return (
             <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
                 {/* 网格线 */}
                 <defs>
                     <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#333" strokeWidth="0.5"/>
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#333" strokeWidth="0.5" />
                     </pattern>
                 </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" opacity="0.3"/>
-                
+                <rect width="100%" height="100%" fill="url(#grid)" opacity="0.3" />
+
                 {/* 中心线 */}
-                <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="#666" strokeWidth="1" strokeDasharray="3,3"/>
-                
+                <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="#666" strokeWidth="1" strokeDasharray="3,3" />
+
                 {/* 波形 */}
-                <path 
-                    d={pathCommands} 
-                    fill="none" 
-                    stroke={outputEnabled ? "#f7df1e" : "#888"} 
+                <path
+                    d={pathCommands}
+                    fill="none"
+                    stroke={outputEnabled ? "#f7df1e" : "#888"}
                     strokeWidth="2"
                 />
             </svg>
         );
     };
 
+    // 修改io.js中的controlSignalGenerator函数
+    const controlSignalGenerator = async (action, params = null) => {
+        switch (action) {
+            case 'set_waveform':
+                if (params) {
+                    await APISetWaveform(params.waveform, params.frequency);
+                } else {
+                    await APISetWaveform();
+                }
+                break;
+            case 'stop':
+                await APISignalGeneratorStop();
+                break;
+            default:
+                console.error('未知信号发生器控制动作:', action);
+                return false;
+        }
+
+        return true;
+    }
+
+
     // 输出开关切换
     const handleOutputToggle = async () => {
         const newState = !outputEnabled;
         console.log('信号发生器输出切换:', newState ? '开启' : '关闭');
-        
+
         if (newState) {
             // 开启时：发送波形和频率设置请求
             console.log(`设置波形: ${waveform}, 频率: ${frequency}Hz`);
-            const success = await wsManager.controlSignalGenerator('set_waveform', {
+            const success = await controlSignalGenerator('set_waveform', {
                 waveform: waveform,
                 frequency: frequency
             });
-            
+
             if (success) {
                 setOutputEnabled(true);
             }
         } else {
             // 关闭时：发送停止请求
-            const success = await wsManager.controlSignalGenerator('stop');
+            const success = await controlSignalGenerator('stop');
             if (success) {
                 setOutputEnabled(false);
             }
@@ -160,9 +178,9 @@ function SignalGenerator() {
                     <p className="text-sm text-gray-600">生成各种波形信号</p>
                 </div>
                 <label className="inline-flex items-center cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
+                    <input
+                        type="checkbox"
+                        className="sr-only peer"
                         checked={outputEnabled}
                         onChange={handleOutputToggle}
                     />
@@ -177,7 +195,7 @@ function SignalGenerator() {
                 {/* 左侧：控制面板 */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                     <h3 className="text-lg font-medium mb-4 text-gray-800">信号控制</h3>
-                    
+
                     {/* 波形选择 */}
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-gray-700 mb-3">波形选择</label>
@@ -188,13 +206,15 @@ function SignalGenerator() {
                                     onClick={() => handleWaveformChange(option.value)}
                                     className={`
                                         p-3 rounded-md text-sm font-medium transition-all duration-200 flex flex-col items-center
-                                        ${waveform === option.value 
-                                            ? 'bg-blue-500 text-white shadow-md' 
+                                        ${waveform === option.value
+                                            ? 'bg-blue-500 text-white shadow-md'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }
                                     `}
                                 >
-                                    <span className="text-lg mb-1">{option.icon}</span>
+                                    <span className="text-lg mb-1">
+                                        <span className={["iconfont", option.icon].join(' ')} style={{ fontSize: '18px' }}></span>
+                                    </span>
                                     <span className="text-xs">{option.label}</span>
                                 </button>
                             ))}
@@ -215,8 +235,8 @@ function SignalGenerator() {
                                     onClick={() => handleFrequencyChange(option.value)}
                                     className={`
                                         py-2 px-3 rounded-md text-sm font-medium transition-all duration-200
-                                        ${frequency === option.value 
-                                            ? 'bg-blue-500 text-white shadow-md' 
+                                        ${frequency === option.value
+                                            ? 'bg-blue-500 text-white shadow-md'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }
                                     `}
@@ -245,7 +265,7 @@ function SignalGenerator() {
                 {/* 右侧：波形预览和状态显示 */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                     <h3 className="text-lg font-medium mb-4 text-gray-800">波形预览</h3>
-                    
+
                     {/* 波形显示区域 */}
                     <div className={`h-40 border rounded-md p-2 mb-4 ${outputEnabled ? 'bg-black' : 'bg-gray-800'}`}>
                         {renderWaveformPreview()}
@@ -259,15 +279,15 @@ function SignalGenerator() {
                                 {waveformOptions.find(w => w.value === waveform)?.label}
                             </div>
                         </div>
-                        
+
                         <div className="bg-gray-50 p-3 rounded">
                             <div className="text-xs text-gray-600 mb-1">频率</div>
                             <div className="text-sm font-semibold text-blue-600">
                                 {formatFrequency(frequency)}
                             </div>
                         </div>
-                        
-                        
+
+
                         <div className="bg-gray-50 p-3 rounded">
                             <div className="text-xs text-gray-600 mb-1">输出状态</div>
                             <div className={`text-sm font-semibold ${outputEnabled ? 'text-green-600' : 'text-gray-500'}`}>

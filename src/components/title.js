@@ -1,9 +1,9 @@
 function Title() {
-    return <section className="mx-auto px-4 sm:container py-[20px]" style={{
+    return <section className="mx-auto sm:container py-[20px]" style={{
         // backgroundColor: "#f6f6f6",
         borderRadius: "10px"
     }}>
-        <div className="mx-auto px-4 sm:container">
+        <div className="mx-auto sm:container">
             <div>
                 <h2 className="mb-2 text-2xl font-semibold text-dark dark:text-white">
                     一体机硬件设备平台

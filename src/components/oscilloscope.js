@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactECharts from 'echarts-for-react';
 import wsManager from '../io';
+import { APICloseOCC, APIOpenOCC } from '../request/api';
 
 function Oscilloscope() {
     const [isRunning, setIsRunning] = useState(false);
@@ -23,13 +24,13 @@ function Oscilloscope() {
         dataBuffer.current.forEach(value => {
             const now = new Date();
             const timeStr = now.toLocaleTimeString();
-            
+
             dataPoints.current.push({
                 time: timeStr,
                 value: value,
                 timestamp: now.getTime()
             });
-            
+
             if (dataPoints.current.length > maxDataPoints) {
                 dataPoints.current.shift();
             }
@@ -41,13 +42,13 @@ function Oscilloscope() {
         // 更新图表
         const times = dataPoints.current.map(point => point.time);
         const values = dataPoints.current.map(point => point.value);
-        
+
         // 计算动态Y轴范围
         if (values.length > 0) {
             const recentValues = values.slice(-20);
             const avg = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
             const range = 50;
-            
+
             chartRef.current.getEchartsInstance().setOption({
                 xAxis: {
                     data: times
@@ -75,31 +76,41 @@ function Oscilloscope() {
 
         // 将数据添加到缓冲区
         dataBuffer.current.push(value);
-        
+
         // 标记有待更新
         pendingUpdates.current = true;
-        
+
         // 使用防抖更新
         const currentTime = performance.now();
         if (currentTime - lastUpdateTime.current >= updateInterval) {
             lastUpdateTime.current = currentTime;
-            
+
             // 使用 requestAnimationFrame 确保在下一个重绘周期更新
             if (updateTimer.current) {
                 cancelAnimationFrame(updateTimer.current);
             }
-            
+
             updateTimer.current = requestAnimationFrame(() => {
                 batchUpdateChart();
             });
         }
     }, [isRunning, batchUpdateChart]);
 
+    // 添加示波器控制方法
+    const controlOscilloscope = async (isOpen) => {
+        if (isOpen) {
+            await APIOpenOCC();
+        } else {
+            await APICloseOCC();
+        }
+        return true;
+    }
+
     const handleOscilloscopeControl = async () => {
-        const success = await wsManager.controlOscilloscope(!isRunning);
+        const success = await controlOscilloscope(!isRunning);
         if (success) {
             setIsRunning(!isRunning);
-            
+
             // 如果停止运行，清理待处理的更新
             if (isRunning) {
                 if (updateTimer.current) {
@@ -132,18 +143,18 @@ function Oscilloscope() {
     }, [isRunning, addDataPoint]);
 
     // 清理数据的方法
-    const clearData = useCallback(() => {
-        dataPoints.current = [];
-        dataBuffer.current = [];
-        pendingUpdates.current = false;
-        
-        if (chartRef.current) {
-            chartRef.current.getEchartsInstance().setOption({
-                xAxis: { data: [] },
-                series: [{ data: [] }]
-            });
-        }
-    }, []);
+    // const clearData = useCallback(() => {
+    //     dataPoints.current = [];
+    //     dataBuffer.current = [];
+    //     pendingUpdates.current = false;
+
+    //     if (chartRef.current) {
+    //         chartRef.current.getEchartsInstance().setOption({
+    //             xAxis: { data: [] },
+    //             series: [{ data: [] }]
+    //         });
+    //     }
+    // }, []);
 
     // 优化的图表配置
     const options = {
@@ -163,9 +174,9 @@ function Oscilloscope() {
             // backgroundColor: 'rgba(0,0,0,0.8)',
             // borderColor: '#f7df1e',
             // textStyle: {
-                // color: '#fff'
+            // color: '#fff'
             // },
-            formatter: function(params) {
+            formatter: function (params) {
                 const data = params[0];
                 return `时间: ${data.name}<br/>数值: ${data.value?.toFixed(2) || 'N/A'}`;
             },
@@ -238,7 +249,7 @@ function Oscilloscope() {
             axisLabel: {
                 // color: '#666',
                 fontSize: 10,
-                formatter: function(value) {
+                formatter: function (value) {
                     return value.toFixed(1);
                 }
             },
@@ -276,12 +287,12 @@ function Oscilloscope() {
     };
 
     return (
-        <div className="mx-auto px-4 sm:container py-10 mt-[10px]" style={{
+        <div className="mx-auto px-4 sm:container mt-[10px]" style={{
             backgroundColor: "#f6f6f6",
             borderRadius: "10px"
         }}>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">示波器</h2>
+                <h2 className="text-xl font-semibold mt-3">示波器</h2>
                 <div className="flex items-center gap-4">
                     {/* <button 
                         onClick={clearData}
@@ -291,9 +302,9 @@ function Oscilloscope() {
                         清除数据
                     </button> */}
                     <label className="inline-flex items-center cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            className="sr-only peer" 
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
                             checked={isRunning}
                             onChange={handleOscilloscopeControl}
                         />
@@ -304,7 +315,7 @@ function Oscilloscope() {
                     </label>
                 </div>
             </div>
-            
+
             <div className="mb-2 text-sm text-gray-600">
                 {/* 数据点数: {dataPoints.current.length}/{maxDataPoints} */}
                 {dataBuffer.current.length > 0 && (
@@ -313,10 +324,10 @@ function Oscilloscope() {
                     </span>
                 )}
             </div>
-            
-            <ReactECharts 
+
+            <ReactECharts
                 ref={chartRef}
-                option={options} 
+                option={options}
                 style={{ height: '400px' }}
                 notMerge={false} // 改为false，允许合并更新
                 lazyUpdate={true} // 开启延迟更新

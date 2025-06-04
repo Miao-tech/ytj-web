@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import wsManager from '../io'; // 导入 WebSocket 管理器
-// 需要从io.js导入控制万用表的函数，目前还没有定义
-// import { controlMultimeterMode } from '../io'; 
+import {
+    APICloseMultimeter,
+    APIOpenDCV,
+    APIOpenACV,
+    APIOpenDCA,
+    APIOpenCont,
+    APIOpenResistense,
+} from '../request/api';
 
 function Multimeter() {
     // 从 Redux store 中获取万用表数据
@@ -21,6 +26,47 @@ function Multimeter() {
         { key: 'RES', label: 'Ω', subLabel: '电阻', unit: 'Ω', color: 'text-green-500' },
     ];
 
+    // 添加万用表控制方法
+    const controlMultimeter = async (action, mode = null) => {
+        switch (action) {
+            case 'open':
+                // 打开时默认电阻档
+                await APIOpenResistense();
+                break;
+            case 'close':
+                await APICloseMultimeter();
+                break;
+            case 'changeMode':
+                switch (mode) {
+                    case 'DCV':
+                        await APIOpenDCV();
+                        break;
+                    case 'ACV':
+                        await APIOpenACV();
+                        break;
+                    case 'DCA':
+                        await APIOpenDCA();
+                        break;
+                    case 'CONT':
+                        await APIOpenCont();
+                        break;
+                    case 'RES':
+                        // 电阻档
+                        await APIOpenResistense();
+                        break;
+                    default:
+                        console.error('未知万用表模式:', mode);
+                        return false;
+                }
+                break;
+            default:
+                console.error('未知万用表控制动作:', action);
+                return false;
+        }
+
+        return true;
+    }
+
     // 根据当前模式获取显示颜色
     const getDisplayColor = () => {
         const mode = modes.find(m => m.key === currentMode);
@@ -37,13 +83,13 @@ function Multimeter() {
     const isUnitValid = (receivedUnit, currentMode) => {
         const modeUnitMap = {
             'DCV': ['V', 'mV', 'kV'],
-            'ACV': ['V', 'mV', 'kV'], 
+            'ACV': ['V', 'mV', 'kV'],
             'DCA': ['A', 'mA', 'μA', 'uA'],
             'RES': ['Ω', 'kΩ', 'MΩ', 'ohm', 'kohm', 'mohm']
         };
-        
+
         const validUnits = modeUnitMap[currentMode] || [];
-        return validUnits.some(unit => 
+        return validUnits.some(unit =>
             receivedUnit?.toLowerCase() === unit.toLowerCase()
         );
     };
@@ -51,7 +97,7 @@ function Multimeter() {
     // 获取要显示的数值
     const getDisplayValue = () => {
         if (!isOn) return '---';
-        
+
         // 检查数据是否与当前模式匹配
         if (multimeterValue && multimeterUnit) {
             if (isUnitValid(multimeterUnit, currentMode)) {
@@ -61,19 +107,19 @@ function Multimeter() {
                 return '---'; // 单位不匹配时显示 ---
             }
         }
-        
+
         return multimeterValue || '---';
     };
 
     // 获取要显示的单位
     const getDisplayUnitText = () => {
         if (!isOn) return '';
-        
+
         // 如果有从硬件返回的单位且与当前模式匹配，使用硬件返回的单位
         if (multimeterUnit && isUnitValid(multimeterUnit, currentMode)) {
             return multimeterUnit;
         }
-        
+
         // 否则使用模式默认单位
         return getDisplayUnit();
     };
@@ -81,14 +127,14 @@ function Multimeter() {
     // 总开关切换处理函数
     const handlePowerToggle = async () => {
         const action = isOn ? 'close' : 'open';
-        const success = await wsManager.controlMultimeter(action);
+        const success = await controlMultimeter(action);
         if (success) {
             setIsOn(!isOn);
             // 如果关闭万用表，清空显示
             if (!isOn) {
                 // 万用表关闭时，Redux store 会被清空，这里不需要手动清空状态
             } else {
-                 // 如果打开万用表，默认切换到电阻档
+                // 如果打开万用表，默认切换到电阻档
                 setCurrentMode('RES');
             }
         }
@@ -98,7 +144,7 @@ function Multimeter() {
     const handleModeChange = async (modeKey) => {
         if (!isOn) return; // 如果万用表未打开，不允许切换模式
 
-        const success = await wsManager.controlMultimeter('changeMode', modeKey);
+        const success = await controlMultimeter('changeMode', modeKey);
         if (success) {
             setCurrentMode(modeKey);
         }
@@ -121,15 +167,15 @@ function Multimeter() {
         <div className="mx-auto px-4 sm:container pt-[10px] pb-[20px] mt-[10px] bg-[#f6f6f6] rounded-[10px]">
             {/* 标题和副标题 */}
             <div className="flex justify-between items-center mb-6">
-                 <div>
+                <div>
                     <h2 className="text-xl font-semibold text-gray-900">数字万用表</h2>
                     <p className="text-sm text-gray-600">多功能电子测量仪表</p>
-                 </div>
+                </div>
                 {/* 总开关按钮 */}
                 <label className="inline-flex items-center cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
+                    <input
+                        type="checkbox"
+                        className="sr-only peer"
                         checked={isOn}
                         onChange={handlePowerToggle}
                     />
@@ -170,5 +216,6 @@ function Multimeter() {
         </div>
     );
 }
+
 
 export default Multimeter;

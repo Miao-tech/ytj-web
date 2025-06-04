@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 
 function Temperature() {
@@ -7,19 +6,23 @@ function Temperature() {
 
 
     return (
-        <div className="mx-auto px-4 sm:container py-10 mt-[10px]" style={{
-            backgroundColor: "#f6f6f6",
-            borderRadius: "10px"
-        }}>
-            <div className="mx-auto max-w-7xl px-6 lg:px-8" >
-                <dl className="grid grid-cols-1 gap-x-8 gap-y-24 text-center lg:grid-cols-2">
-                    <div className="mx-auto flex max-w-xs flex-col">
-                        <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">温度: {temperature}℃</dd>
-                    </div>
-                    <div className="mx-auto flex max-w-xs flex-col">
-                        <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">湿度: {humidity}%</dd>
-                    </div>
-                </dl>
+        <div>
+            {/* 标题和副标题 */}
+            <div className='mb-2'>
+                <h2 className="text-xl font-semibold text-gray-900">温湿度</h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border" >
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <span class="iconfont icon-wenduji" style={{ fontSize: '40px' }}></span>
+                    <div style={{ fontSize: '16px' }}>温度: {temperature}℃</div>
+                </div>
+
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <span class="iconfont icon-shidu" style={{ fontSize: '40px' }}></span>
+                    <div style={{ fontSize: '16px' }}>湿度: {humidity}%</div>
+                </div>
+
             </div>
         </div>
     );

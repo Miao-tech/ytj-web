@@ -16,14 +16,24 @@ function App() {
       {/* 大标题 */}
       <Title />
 
-      {/* 温湿度 */}
-      <Temperature />
-
-      {/* 手势与红外 */}
-      <Gesture />
-
       {/* Led灯控制 */}
-      <Led />
+      <div className="py-[10px] mx-auto px-4 sm:container mt-[10px] pb-6" style={{
+        backgroundColor: "#f6f6f6",
+        borderRadius: "10px"
+      }}>
+        <div className='grid md:grid-cols-2 gap-6 grid-cols-1'>
+          {/* 灯 */}
+          <Led />
+
+          <div className='grid gap-6 grid-cols-1'>
+            {/* 手势与红外 */}
+            <Gesture />
+
+            {/* 温湿度 */}
+            <Temperature />
+          </div>
+        </div>
+      </div>
 
       {/* 示波器 */}
       <Oscilloscope />

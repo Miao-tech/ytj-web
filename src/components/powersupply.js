@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import wsManager from '../io';
+import { APIPowerSupplyOff, APIPowerSupplyOn, APISetVoltage } from '../request/api';
 
 function PowerSupply() {
     // 从 Redux store 中获取电源数据
 
     const powerSupplyData = useSelector((state) => state.integratedMachine.powerSupply);
-    
+
     // 支持的电压档位
     const voltageOptions = [
         { value: 0.1, label: '0.1 V' },
@@ -16,9 +17,9 @@ function PowerSupply() {
     ];
 
     const [voltage, setVoltage] = useState(1.0);
-    const [currentLimit, setCurrentLimit] = useState(1.0);
+    // const [currentLimit, setCurrentLimit] = useState(1.0);
     const [outputEnabled, setOutputEnabled] = useState(false);
-    const [isAdjusting, setIsAdjusting] = useState(false);
+    const [isAdjusting] = useState(false);
 
     // 格式化数值显示
     const formatValue = (value, decimals = 2) => {
@@ -30,30 +31,51 @@ function PowerSupply() {
         return powerSupplyData?.actualVoltage ?? (outputEnabled ? voltage : 0);
     };
 
-    const getActualCurrent = () => {
-        return powerSupplyData?.actualCurrent ?? (outputEnabled ? 0.1 : 0);
-    };
+    // const getActualCurrent = () => {
+    //     return powerSupplyData?.actualCurrent ?? (outputEnabled ? 0.1 : 0);
+    // };
 
-    
+
+    // 添加电源控制方法
+    const controlPowerSupply = async (action, value = null) => {
+        switch (action) {
+            case 'output':
+                if (value) {
+                    await APIPowerSupplyOn();
+                } else {
+                    await APIPowerSupplyOff();
+                }
+                break;
+            case 'voltage':
+                await APISetVoltage(value)
+                break;
+            default:
+                console.error('未知电源控制动作:', action);
+                return false;
+        }
+
+        return true;
+    }
+
     // 输出开关切换
     const handleOutputToggle = async () => {
         const newState = !outputEnabled;
         console.log('电源输出切换:', newState ? '开启' : '关闭');
-        
+
         if (newState) {
             // 开启时：先发送电压设置请求，再开启输出
             console.log(`设置电压为: ${voltage}V`);
-            const voltageSuccess = await wsManager.controlPowerSupply('voltage', voltage);
-            
+            const voltageSuccess = await controlPowerSupply('voltage', voltage);
+
             if (voltageSuccess) {
-                const outputSuccess = await wsManager.controlPowerSupply('output', true);
+                const outputSuccess = await controlPowerSupply('output', true);
                 if (outputSuccess) {
                     setOutputEnabled(true);
                 }
             }
         } else {
             // 关闭时：直接关闭输出
-            const success = await wsManager.controlPowerSupply('output', false);
+            const success = await controlPowerSupply('output', false);
             if (success) {
                 setOutputEnabled(false);
             }
@@ -73,7 +95,7 @@ function PowerSupply() {
     const handleVoltageChange = async (newVoltage) => {
         setVoltage(newVoltage);
         console.log(`电压档位切换为: ${newVoltage}V`);
-        
+
         // 如果输出已开启，立即发送电压设置请求
         if (outputEnabled) {
             const success = await wsManager.controlPowerSupply('voltage', newVoltage);
@@ -98,9 +120,9 @@ function PowerSupply() {
                 </div>
                 {/* 总输出开关 */}
                 <label className="inline-flex items-center cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
+                    <input
+                        type="checkbox"
+                        className="sr-only peer"
                         checked={outputEnabled}
                         onChange={handleOutputToggle}
                     />
@@ -115,14 +137,14 @@ function PowerSupply() {
                 {/* 左侧：控制面板 */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                     <h3 className="text-lg font-medium mb-4 text-gray-800">输出控制</h3>
-                    
+
                     {/* 电压控制 - 改为档位选择 */}
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-3">
                             <span className="text-gray-600">输出电压</span>
                             <span className="font-mono text-blue-600">{voltage} V</span>
                         </div>
-                        
+
                         {/* 自定义ToggleGroup样式 */}
                         <div className="grid grid-cols-2 gap-2">
                             {voltageOptions.map((option) => (
@@ -132,8 +154,8 @@ function PowerSupply() {
                                     disabled={false}
                                     className={`
                                         py-2 px-3 rounded-md text-sm font-medium transition-all duration-200
-                                        ${voltage === option.value 
-                                            ? 'bg-blue-500 text-white shadow-md' 
+                                        ${voltage === option.value
+                                            ? 'bg-blue-500 text-white shadow-md'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }
                                         ${!outputEnabled && 'opacity-50 cursor-not-allowed'}
@@ -144,11 +166,11 @@ function PowerSupply() {
                                 </button>
                             ))}
                         </div>
-                        
+
                         {isAdjusting && (
                             <div className="text-xs text-orange-600 mt-2 text-center">正在切换电压档位...</div>
                         )}
-                        
+
                         {/* {!outputEnabled && (
                             <div className="text-xs text-gray-500 mt-2 text-center">请先开启输出后选择电压档位</div>
                         )} */}
@@ -179,19 +201,19 @@ function PowerSupply() {
                 {/* 右侧：实时测量显示 */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                     <h3 className="text-lg font-medium mb-4 text-gray-800">实时测量</h3>
-                    
+
                     <div className="space-y-4">
                         {/* 输出电压显示 */}
                         <div className="bg-[#1a1a1a] p-4 rounded-lg">
                             <div className="text-xs mb-1 text-gray-400">输出电压</div>
                             <div className="flex items-end">
                                 <span className="text-4xl font-mono text-blue-500 leading-none">
-                                    {outputEnabled ? formatValue(getActualVoltage(), 2) : formatValue(0.0, 2) }
+                                    {outputEnabled ? formatValue(getActualVoltage(), 2) : formatValue(0.0, 2)}
                                 </span>
                                 <span className="text-2xl text-blue-400 ml-1 mb-1">V</span>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
