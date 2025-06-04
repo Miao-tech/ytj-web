@@ -49,7 +49,7 @@ function Gesture() {
                 <h2 className="text-xl font-semibold text-gray-900">传感器</h2>
             </div>
 
-            <div className='grid grid-cols-3 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border'>
+            <div className='grid grid-cols-3 sm:container bg-white p-6 rounded-lg shadow-sm border' style={{ height: "160px" }}>
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <span class="iconfont icon-a-shoushoushi" style={{ fontSize: '40px' }}></span>
                     <div style={{ fontSize: '16px' }}>手势传感器: {gestureSensorText}</div>

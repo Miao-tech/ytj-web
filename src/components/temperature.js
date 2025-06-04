@@ -12,7 +12,7 @@ function Temperature() {
                 <h2 className="text-xl font-semibold text-gray-900">温湿度</h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border" >
+            <div className="grid grid-cols-2 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border" style={{ height: "155px" }}>
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <span class="iconfont icon-wenduji" style={{ fontSize: '40px' }}></span>
                     <div style={{ fontSize: '16px' }}>温度: {temperature}℃</div>

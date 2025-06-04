@@ -32,10 +32,23 @@ function Led() {
         controlLed(ledNumber, newState);
     }
 
-    const lightEle = (enable) => {
-        return enable ?
-            <span class="iconfont icon-led-on" style={{ fontSize: '40px', color: "#ffb300" }}></span> :
-            <span class="iconfont icon-led-off" style={{ fontSize: '40px' }}></span>
+    const lightEle = (enable, number) => {
+        return <div style={{ position: "relative" }}>
+            <div style={{
+                top: "29px",
+                left: "24px",
+                color: "rgb(255 255 255)",
+                fontWeight: "bold",
+                fontSize: "18px",
+                textShadow: "rgb(63 229 177 / 94 %) 0px 0px 4px",
+                position: "absolute",
+            }}>{number}</div>
+            {
+                enable ?
+                    <span class="iconfont icon-led-on" style={{ fontSize: '59px', color: "#ffb300" }}></span> :
+                    <span class="iconfont icon-led-off" style={{ fontSize: '59px' }}></span>
+            }
+        </div >
     }
 
     return (
@@ -45,9 +58,9 @@ function Led() {
                 {/* <p className="text-sm text-gray-600">LED灯控制台</p> */}
             </div>
 
-            <div className='grid grid-cols-3 gap-4 sm:container bg-white p-6 rounded-lg shadow-sm border'>
+            <div className='grid grid-cols-3 gap-2 sm:container bg-white pb-6 rounded-lg shadow-sm border'>
                 <div className="flex flex-col items-center">
-                    {lightEle(led1)}
+                    {lightEle(led1, 1)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(1, led1)} />
@@ -56,7 +69,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led2)}
+                    {lightEle(led2, 2)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(2, led2)} />
@@ -65,7 +78,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led3)}
+                    {lightEle(led3, 3)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(3, led3)} />
@@ -74,7 +87,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led4)}
+                    {lightEle(led4, 4)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(4, led4)} />
@@ -83,7 +96,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led5)}
+                    {lightEle(led5, 5)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(5, led5)} />
@@ -92,7 +105,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led6)}
+                    {lightEle(led6, 6)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(6, led6)} />
@@ -101,7 +114,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led7)}
+                    {lightEle(led7, 7)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(7, led7)} />
@@ -110,7 +123,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led8)}
+                    {lightEle(led8, 8)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(8, led8)} />
@@ -119,7 +132,7 @@ function Led() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    {lightEle(led9)}
+                    {lightEle(led9, 9)}
 
                     <label className="inline-flex items-center cursor-pointer">
                         <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(9, led9)} />
