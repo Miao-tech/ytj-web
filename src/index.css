@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.App {
+    margin-bottom: 100px;
+}
