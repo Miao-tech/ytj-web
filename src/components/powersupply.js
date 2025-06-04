@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import wsManager from '../io';
 import { APIPowerSupplyOff, APIPowerSupplyOn, APISetVoltage } from '../request/api';
 
 function PowerSupply() {
@@ -98,7 +97,7 @@ function PowerSupply() {
 
         // 如果输出已开启，立即发送电压设置请求
         if (outputEnabled) {
-            const success = await wsManager.controlPowerSupply('voltage', newVoltage);
+            const success = await controlPowerSupply('voltage', newVoltage);
             console.log('电压设置结果:', success ? '成功' : '失败');
         }
     };

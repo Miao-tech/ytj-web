@@ -6,11 +6,8 @@ export const APIOpenLED = (numbers) => request(`/open_led?numbers=${numbers}`);
 // 关闭LED
 export const APICloseLED = (numbers) => request(`/close_led?numbers=${numbers}`);
 
-// 得到温度
+// 得到温湿度
 export const APIGetTemperature = () => request('/get_temperature');
-
-// 得到湿度
-export const APIGetHumidity = () => request('/get_humidity');
 
 // 得到距离
 export const APIGetDistance = () => request('/get_distance');

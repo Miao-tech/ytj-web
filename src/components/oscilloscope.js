@@ -185,10 +185,10 @@ function Oscilloscope() {
             transitionDuration: 0
         },
         grid: {
-            left: '5%',
-            right: '5%',
+            left: '2%',
+            right: '2%',
             bottom: '5%',
-            top: '12%',
+            top: '10%',
             containLabel: true,
             // backgroundColor: '#000',
             // borderColor: '#333'
@@ -287,7 +287,7 @@ function Oscilloscope() {
     };
 
     return (
-        <div className="mx-auto px-4 sm:container mt-[10px]" style={{
+        <div className="mx-auto px-4 sm:container mt-[10px] pb-6" style={{
             backgroundColor: "#f6f6f6",
             borderRadius: "10px"
         }}>
@@ -326,9 +326,10 @@ function Oscilloscope() {
             </div>
 
             <ReactECharts
+                className='bg-white'
                 ref={chartRef}
                 option={options}
-                style={{ height: '400px' }}
+                style={{ height: '400px', borderRadius: "10px", paddingBottom: "10px" }}
                 notMerge={false} // 改为false，允许合并更新
                 lazyUpdate={true} // 开启延迟更新
             />

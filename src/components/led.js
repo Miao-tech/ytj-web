@@ -46,7 +46,7 @@ function Led() {
             {
                 enable ?
                     <span class="iconfont icon-led-on" style={{ fontSize: '59px', color: "#ffb300" }}></span> :
-                    <span class="iconfont icon-led-off" style={{ fontSize: '59px' }}></span>
+                    <span class="iconfont icon-led-off" style={{ fontSize: '59px', color: "#d1d1d1" }}></span>
             }
         </div >
     }

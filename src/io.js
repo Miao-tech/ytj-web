@@ -16,7 +16,6 @@ import {
     APIGetTemperature,
     APIGetDistance,
     APIGetLight,
-    APIGetHumidity
 } from './request/api';
 
 class WebSocketManager {
@@ -45,7 +44,6 @@ class WebSocketManager {
         this.temperatureTimer = setInterval(() => {
             if (this.isConnected) {
                 APIGetTemperature();
-                APIGetHumidity();
             }
         }, interval);
     }
