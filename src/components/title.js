@@ -6,7 +6,7 @@ function Title() {
         <div className="mx-auto sm:container">
             <div style={{ display: "flex", alignContent: "center" }}>
                 <div style={{ marginRight: "10px" }}>
-                    <img src="/logo.png" width={60} alt="一体机硬件设备平台" />
+                    <img src={process.env.PUBLIC_URL + "/logo.png"} width={60} alt="一体机硬件设备平台" />
                 </div>
                 <div>
                     <h1
