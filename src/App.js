@@ -4,8 +4,8 @@ import Led from "./components/led"
 import Oscilloscope from "./components/oscilloscope"
 import Multimeter from "./components/multimeter"
 import Copyright from "./components/copyright"
-import Gesture from "./components/gesture"
-import "./io"
+import Sensor from "./components/sensor"
+import "./request/io"
 import PowerSupply from "./components/powersupply"
 import SignalGenerator from "./components/signalgenerator"
 
@@ -27,7 +27,7 @@ function App() {
 
           <div className='grid gap-6 grid-cols-1'>
             {/* 手势与红外 */}
-            <Gesture />
+            <Sensor />
 
             {/* 温湿度 */}
             <Temperature />

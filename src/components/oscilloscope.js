@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactECharts from 'echarts-for-react';
-import wsManager from '../io';
+import wsManager from '../request/io';
 import { APICloseOCC, APIOpenOCC } from '../request/api';
 
 function Oscilloscope() {
