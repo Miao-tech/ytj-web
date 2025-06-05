@@ -98,8 +98,13 @@ function Multimeter() {
     const getDisplayValue = () => {
         if (!isOn) return '---';
 
+        console.log(
+            "数值：" + multimeterValue,
+            "单位：" + multimeterUnit
+        )
+
         // 检查数据是否与当前模式匹配
-        if (multimeterValue && multimeterUnit) {
+        if (multimeterValue !== NaN && multimeterUnit) {
             if (isUnitValid(multimeterUnit, currentMode)) {
                 return multimeterValue;
             } else {

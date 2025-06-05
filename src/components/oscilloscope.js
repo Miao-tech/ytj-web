@@ -289,10 +289,14 @@ function Oscilloscope() {
     return (
         <div className="mx-auto px-4 sm:container mt-[10px] pb-6" style={{
             backgroundColor: "#f6f6f6",
-            borderRadius: "10px"
+            borderRadius: "10px",
+            position: "relative"
         }}>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold mt-3">示波器</h2>
+            <div className="flex justify-between items-center mb-4 pt-4">
+                <div>
+                    <h2 className="text-xl font-semibold text-gray-900">示波器图表</h2>
+                    <p className="text-sm text-gray-600">观察电信号随时间变化的特性</p>
+                </div>
                 <div className="flex items-center gap-4">
                     {/* <button 
                         onClick={clearData}
@@ -316,7 +320,12 @@ function Oscilloscope() {
                 </div>
             </div>
 
-            <div className="mb-2 text-sm text-gray-600">
+            <div className="mb-2 text-sm text-gray-600" style={{
+                position: "absolute",
+                top: "68px",
+                left: "22px",
+                zIndex: "1000"
+            }}>
                 {/* 数据点数: {dataPoints.current.length}/{maxDataPoints} */}
                 {dataBuffer.current.length > 0 && (
                     <span className="ml-4 text-blue-600">
@@ -333,7 +342,7 @@ function Oscilloscope() {
                 notMerge={false} // 改为false，允许合并更新
                 lazyUpdate={true} // 开启延迟更新
             />
-        </div>
+        </div >
     );
 }
 
