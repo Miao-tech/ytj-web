@@ -104,7 +104,7 @@ function Multimeter() {
         )
 
         // 检查数据是否与当前模式匹配
-        if (multimeterValue !== NaN && multimeterUnit) {
+        if (!isNaN(multimeterValue) && multimeterUnit) {
             if (isUnitValid(multimeterUnit, currentMode)) {
                 return multimeterValue;
             } else {

@@ -60,11 +60,6 @@ class WebSocketManager {
 
         // 延迟获取初始数据，避免设备冲突
         this.scheduleInitialDataFetch();
-
-        // 启动定时获取温湿度（延迟5秒后开始，避免与初始化数据冲突）
-        setTimeout(() => {
-            this.startTemperaturePolling(10000); // 每10秒获取一次
-        }, 5000);
     }
 
     // 分批获取初始化信息
@@ -75,32 +70,11 @@ class WebSocketManager {
         setTimeout(() => APIGetLight(), 2000);
     }
 
-    // 添加启动定时获取温湿度的方法
-    startTemperaturePolling(interval = 5000) { // 默认5秒获取一次
-        // 清除之前的定时器
-        if (this.temperatureTimer) {
-            clearInterval(this.temperatureTimer);
-        }
-
-        console.log(`开始定时获取温湿度数据，间隔: ${interval}ms`);
-
-        this.temperatureTimer = setInterval(() => {
-            if (this.isConnected) {
-                APIGetTemperature();
-            }
-        }, interval);
-    }
-
-    // 添加停止定时获取的方法
-    stopTemperaturePolling() {
-        if (this.temperatureTimer) {
-            clearInterval(this.temperatureTimer);
-            this.temperatureTimer = null;
-            console.log('停止定时获取温湿度数据');
-        }
-    }
-
-
+    /**
+     * Handles incoming message events by processing the data and updating the store if valid.
+     * @param {Event} event - The message event containing data to be processed.
+     * @private
+     */
     handleMessage(event) {
         // console.log('收到消息:', event.data);
         const result = this.processData(event.data);
