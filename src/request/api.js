@@ -9,6 +9,9 @@ export const APICloseLED = (numbers) => request(`/close_led?numbers=${numbers}`)
 // 得到温湿度
 export const APIGetTemperature = () => request('/get_temperature');
 
+// 得到手势传感器
+export const APIGetGesture = () => request('/get_gesture');
+
 // 得到距离
 export const APIGetDistance = () => request('/get_distance');
 

@@ -27,117 +27,138 @@ function Led() {
         }
     }
 
-    const handleLedChange = (ledNumber, currentState) => {
-        const newState = !currentState;
+    const handleLedChange = (ledNumber, newState) => {
         controlLed(ledNumber, newState);
     }
 
     const lightEle = (enable, number) => {
-        return <div style={{ position: "relative" }}>
+        return <div
+            className='mb-1'
+            style={{
+                position: 'relative',
+                background: 'rgb(249 249 249)',
+                width: '60px',
+                height: '60px',
+                borderRadius: '60px',
+                border: '2px solid rgb(205 205 205)'
+            }}
+            onClick={() => handleLedChange(number, !enable)}
+        >
             <div style={{
-                top: "29px",
-                left: "24px",
-                color: "rgb(255 255 255)",
-                fontWeight: "bold",
-                fontSize: "18px",
-                textShadow: "rgb(63 229 177 / 94 %) 0px 0px 4px",
-                position: "absolute",
-            }}>{number}</div>
-            {
-                enable ?
-                    <span className="iconfont icon-led-on" style={{ fontSize: '59px', color: "#ffb300" }}></span> :
-                    <span className="iconfont icon-led-off" style={{ fontSize: '59px', color: "#d1d1d1" }}></span>
-            }
+                top: '-4px',
+                left: '8px',
+                position: 'absolute'
+            }}>
+                {
+                    enable ?
+                        <span className="iconfont icon-led-on" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
+                        <span className="iconfont icon-led-off" style={{ fontSize: '40px', color: "#d1d1d1", cursor: "pointer" }}></span>
+                }
+            </div>
         </div >
     }
 
     return (
-        <div>
+        <div className="py-[10px] mx-auto px-4 sm:container mt-[10px] pb-6" style={{
+            backgroundColor: "#f6f6f6",
+            borderRadius: "10px"
+        }}>
             <div className='mb-2'>
                 <h2 className="text-xl font-semibold text-gray-900">LED灯控制台</h2>
                 {/* <p className="text-sm text-gray-600">LED灯控制台</p> */}
             </div>
 
-            <div className='grid grid-cols-3 gap-2 sm:container bg-white pb-6 rounded-lg shadow-sm border'>
+            <div className='grid grid-cols-9 gap-2 sm:container bg-white pb-6 rounded-lg shadow-sm border pt-4'>
                 <div className="flex flex-col items-center">
                     {lightEle(led1, 1)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(1, led1)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED1</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led2, 2)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(2, led2)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED2</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led3, 3)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(3, led3)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED3</div>
                 </div>
+
 
                 <div className="flex flex-col items-center">
                     {lightEle(led4, 4)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(4, led4)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED4</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led5, 5)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(5, led5)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED5</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led6, 6)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(6, led6)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED6</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led7, 7)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(7, led7)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED7</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led8, 8)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(8, led8)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED8</div>
                 </div>
+
 
                 <div className="flex flex-col items-center">
                     {lightEle(led9, 9)}
 
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer" onChange={() => handleLedChange(9, led9)} />
-                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div style={{
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '18px'
+                    }}>LED9</div>
                 </div>
             </div>
         </div>

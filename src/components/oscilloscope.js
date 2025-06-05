@@ -322,7 +322,7 @@ function Oscilloscope() {
 
             <div className="mb-2 text-sm text-gray-600" style={{
                 position: "absolute",
-                top: "68px",
+                top: "88px",
                 left: "22px",
                 zIndex: "1000"
             }}>

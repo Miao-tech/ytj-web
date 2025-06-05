@@ -50,8 +50,6 @@ function Sensor() {
         };
     }, [gestureSensor]);
 
-
-
     return (
         <div>
             <div className='mb-2'>
