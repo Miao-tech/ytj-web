@@ -65,9 +65,9 @@ class WebSocketManager {
     // 分批获取初始化信息
     scheduleInitialDataFetch() {
         // 分批获取初始数据，避免同时请求
-        setTimeout(() => APIGetTemperature(), 1000);
-        setTimeout(() => APIGetDistance(), 2000);
-        setTimeout(() => APIGetLight(), 3000);
+        APIGetTemperature();
+        APIGetDistance();
+        APIGetLight();
     }
 
     /**
