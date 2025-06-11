@@ -91,10 +91,10 @@ function SensorNew() {
                         {iconEle('icon-wenduji', 'rgb(245, 94, 80)', 'rgb(244, 214, 212)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div style={{ fontSize: "16px" }}>温度传感器: </div>
-                            <div style={{ fontSize: "22px", fontWeight: "bold" }}>
+                            <div className="text-m text-muted-foreground" >温度传感器</div>
+                            <div className="text-2xl font-mono font-bold">
                                 {temperature}
-                                <span style={{ fontSize: "20px", fontWeight: "normal" }}>℃</span>
+                                <span className="text-muted-foreground text-sm ml-1">°C</span>
                             </div>
                         </div>
 
@@ -121,10 +121,11 @@ function SensorNew() {
                         {iconEle('icon-wenduji', 'rgb(78, 158, 240)', 'rgb(207, 225, 244)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div style={{ fontSize: "16px" }}>湿度传感器: </div>
-                            <div style={{ fontSize: "22px", fontWeight: "bold" }}>
+                            <div className="text-m text-muted-foreground" >湿度传感器</div>
+                            <div className="text-2xl font-mono font-bold">
                                 {humidity}
-                                <span style={{ fontSize: "20px", fontWeight: "normal" }}>%</span>
+                                <span className="text-muted-foreground text-sm ml-1">%</span>
+
                             </div>
                         </div>
 
@@ -151,10 +152,10 @@ function SensorNew() {
                         {iconEle('icon-a-cellimage_huaban1fuben94', 'rgb(248, 195, 60)', 'rgb(245, 234, 205)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div style={{ fontSize: "16px" }}>光强度传感器: </div>
-                            <div style={{ fontSize: "22px", fontWeight: "bold" }}>
+                            <div className="text-m text-muted-foreground" >光强度传感器</div>
+                            <div className="text-2xl font-mono font-bold">
                                 {lightIntensitySensor}
-                                <span style={{ fontSize: "20px", fontWeight: "normal" }}> Lux</span>
+                                <span className="text-muted-foreground text-sm ml-1">Lux</span>
                             </div>
                         </div>
 
@@ -182,12 +183,12 @@ function SensorNew() {
                         {iconEle('icon-a-shoushoushi', 'rgb(97, 175, 91)', 'rgb(214, 230, 214)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div style={{ fontSize: "16px" }}>手势传感器</div>
-                            <div style={{ fontSize: "22px", fontWeight: "bold" }}>
+                            <div className="text-m text-muted-foreground" >手势传感器</div>
+                            <div className="text-2xl font-mono font-bold">
                                 {/* 25.2 */}
                                 {gestureSensorText}
 
-                                <span style={{ fontSize: "20px", fontWeight: "normal" }}>℃</span>
+                                {/* <span style={{ fontSize: "20px", fontWeight: "normal" }}>℃</span> */}
                             </div>
                         </div>
 
@@ -214,10 +215,10 @@ function SensorNew() {
                         {iconEle('icon-act006', 'rgb(149, 48, 173)', 'rgb(225, 205, 231)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div style={{ fontSize: "16px" }}>红外传感器: </div>
-                            <div style={{ fontSize: "22px", fontWeight: "bold" }}>
+                            <div className="text-m text-muted-foreground" >红外传感器</div>
+                            <div className="text-2xl font-mono font-bold">
                                 {infraredSensor}
-                                <span style={{ fontSize: "20px", fontWeight: "normal" }}>cm</span>
+                                <span className="text-muted-foreground text-sm ml-1">cm</span>
                             </div>
                         </div>
 

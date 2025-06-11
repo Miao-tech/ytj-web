@@ -51,7 +51,7 @@ function Led() {
             }}>
                 {
                     enable ?
-                        <span className="iconfont icon-led-on" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
+                        <span className="iconfont icon-led-on 0" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
                         <span className="iconfont icon-led-off" style={{ fontSize: '40px', color: "#d1d1d1", cursor: "pointer" }}></span>
                 }
             </div>
@@ -72,93 +72,57 @@ function Led() {
                 <div className="flex flex-col items-center">
                     {lightEle(led1, 1)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED1</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED1</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led2, 2)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED2</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED2</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led3, 3)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED3</div>
+                    <div className='text-s text-muted-foreground mt-1'  >LED3</div>
                 </div>
 
 
                 <div className="flex flex-col items-center">
                     {lightEle(led4, 4)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED4</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED4</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led5, 5)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED5</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED5</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led6, 6)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED6</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED6</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led7, 7)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED7</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED7</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led8, 8)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED8</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED8</div>
                 </div>
 
 
                 <div className="flex flex-col items-center">
                     {lightEle(led9, 9)}
 
-                    <div style={{
-                        color: '#333',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>LED9</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED9</div>
                 </div>
             </div>
         </div>
