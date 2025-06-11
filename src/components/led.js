@@ -1,6 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux'
+import { useEffect } from 'react'
 import { open_led, close_led } from '../store_integrated_machine_slice'
 import { APICloseLED, APIOpenLED } from '../request/api'
+import wsManager from '../request/io'
 
 function Led() {
     const led1 = useSelector((state) => state.integratedMachine.led1)
@@ -13,6 +15,79 @@ function Led() {
     const led8 = useSelector((state) => state.integratedMachine.led8)
     const led9 = useSelector((state) => state.integratedMachine.led9)
     const dispatch = useDispatch()
+
+    // 处理WebSocket消息中的LED状态同步
+    useEffect(() => {
+        // 状态恢复函数
+        const restoreLedStates = async () => {
+            try {
+                const response = await fetch('/api/device_status');
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('获取到后端LED状态:', data);
+                
+                const backendLedStates = data.ui_state?.led_states;
+                if (backendLedStates) {
+                    // 根据后端状态更新Redux store
+                    for (let ledNum = 1; ledNum <= 9; ledNum++) {
+                        const isOn = backendLedStates[`led${ledNum}`];
+                        if (isOn !== undefined) {
+                            if (isOn) {
+                                dispatch(open_led({ number: ledNum }));
+                            } else {
+                                dispatch(close_led({ number: ledNum }));
+                            }
+                        }
+                    }
+                    console.log('✅ LED状态已从后端同步');
+                }
+            } catch (error) {
+                console.error('❌ 获取LED状态失败:', error);
+            }
+        };
+
+        const handleWebSocketMessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'led_state_sync') {
+                    console.log('收到LED状态同步消息:', data);
+                    const ledStates = data.led_states;
+                    if (ledStates) {
+                        for (let ledNum = 1; ledNum <= 9; ledNum++) {
+                            const isOn = ledStates[ledNum.toString()];
+                            if (isOn !== undefined) {
+                                if (isOn) {
+                                    dispatch(open_led({ number: ledNum }));
+                                } else {
+                                    dispatch(close_led({ number: ledNum }));
+                                }
+                            }
+                        }
+                        console.log('✅ LED状态已通过WebSocket同步');
+                    }
+                }
+            } catch (error) {
+                // 忽略非JSON消息
+            }
+        };
+
+        // 监听WebSocket消息
+        if (wsManager.socket) {
+            wsManager.socket.addEventListener('message', handleWebSocketMessage);
+        }
+
+        // 组件挂载时恢复状态
+        restoreLedStates();
+
+        // 清理监听器
+        return () => {
+            if (wsManager.socket) {
+                wsManager.socket.removeEventListener('message', handleWebSocketMessage);
+            }
+        };
+    }, [dispatch]);
 
     // 修改 LED 控制方法
     const controlLed = async (ledNumber, isOpen) => {
@@ -51,7 +126,7 @@ function Led() {
             }}>
                 {
                     enable ?
-                        <span className="iconfont icon-led-on 0" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
+                        <span className="iconfont icon-led-on" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
                         <span className="iconfont icon-led-off" style={{ fontSize: '40px', color: "#d1d1d1", cursor: "pointer" }}></span>
                 }
             </div>

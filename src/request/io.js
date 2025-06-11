@@ -37,7 +37,7 @@ class WebSocketManager {
 
     connect() {
         try {
-            const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://192.168.35.25:8000/ws';
+            const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:8000/ws';
             this.socket = new WebSocket(wsUrl);
             this.setupEventListeners();
         } catch (error) {

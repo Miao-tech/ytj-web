@@ -125,7 +125,6 @@ function SensorNew() {
                             <div className="text-2xl font-mono font-bold">
                                 {humidity}
                                 <span className="text-muted-foreground text-sm ml-1">%</span>
-
                             </div>
                         </div>
 

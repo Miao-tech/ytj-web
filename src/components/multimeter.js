@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
     APICloseMultimeter,
@@ -25,6 +25,48 @@ function Multimeter() {
         { key: 'CONT', label: 'CONT', subLabel: '通断蜂鸣器', unit: '', color: 'text-blue-500' },
         { key: 'RES', label: 'Ω', subLabel: '电阻', unit: 'Ω', color: 'text-green-500' },
     ];
+
+    // 新增：从后端恢复设备状态
+    const restoreDeviceState = useCallback(async () => {
+        try {
+            const response = await fetch('/api/device_status');
+            if (response.ok) {
+                const data = await response.json();
+                console.log('获取到万用表设备状态:', data);
+                
+                // 如果万用表处于开启状态，同步到前端
+                if (data.device_type && data.device_type.startsWith('multimeter_') && data.device_state === 'opened') {
+                    console.log('恢复万用表开启状态:', data.device_type);
+                    setIsOn(true);
+                    
+                    // 根据设备类型设置正确的模式
+                    const modeMap = {
+                        'multimeter_resistance': 'RES',
+                        'multimeter_continuity': 'CONT', 
+                        'multimeter_dc_voltage': 'DCV',
+                        'multimeter_ac_voltage': 'ACV',
+                        'multimeter_dc_current': 'DCA'
+                    };
+                    
+                    const mode = modeMap[data.device_type];
+                    if (mode) {
+                        setCurrentMode(mode);
+                        console.log('设置万用表模式为:', mode);
+                    }
+                } else {
+                    console.log('万用表处于关闭状态或其他设备开启');
+                    setIsOn(false);
+                }
+            }
+        } catch (error) {
+            console.error('恢复万用表设备状态失败:', error);
+        }
+    }, []);
+
+    // 组件挂载时恢复状态
+    useEffect(() => {
+        restoreDeviceState();
+    }, [restoreDeviceState]);
 
     // 添加万用表控制方法
     const controlMultimeter = async (action, mode = null) => {

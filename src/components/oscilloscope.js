@@ -14,6 +14,33 @@ function Oscilloscope() {
     const pendingUpdates = useRef(false);
     const dataBuffer = useRef([]); // 添加数据缓冲区
 
+    // 新增：从后端恢复设备状态
+    const restoreDeviceState = useCallback(async () => {
+        try {
+            const response = await fetch('/api/device_status');
+            if (response.ok) {
+                const data = await response.json();
+                console.log('获取到设备状态:', data);
+                
+                // 如果示波器处于开启状态，同步到前端
+                if (data.device_type === 'oscilloscope' && data.device_state === 'opened') {
+                    console.log('恢复示波器开启状态');
+                    setIsRunning(true);
+                } else {
+                    console.log('示波器处于关闭状态或其他设备开启');
+                    setIsRunning(false);
+                }
+            }
+        } catch (error) {
+            console.error('恢复设备状态失败:', error);
+        }
+    }, []);
+
+    // 组件挂载时恢复状态
+    useEffect(() => {
+        restoreDeviceState();
+    }, [restoreDeviceState]);
+
     // 批量更新图表数据
     const batchUpdateChart = useCallback(() => {
         if (!chartRef.current || !pendingUpdates.current || dataBuffer.current.length === 0) {
