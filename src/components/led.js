@@ -48,6 +48,24 @@ function Led() {
             }
         };
 
+        // 监听WebSocket状态更新事件
+        const handleDeviceStateUpdate = (event) => {
+            console.log('🔄 LED组件收到设备状态更新:', event.detail);
+            // 状态已经通过Redux store更新，这里可以做一些额外的UI处理
+        };
+
+        // 监听Redux store更新成功事件
+        const handleStoreUpdated = (event) => {
+            console.log('✅ LED组件收到store更新成功通知:', event.detail);
+            // 可以在这里显示成功提示或执行其他操作
+        };
+
+        // 监听Redux store更新错误事件
+        const handleStoreUpdateError = (event) => {
+            console.error('❌ LED组件收到store更新错误:', event.detail);
+            // 可以在这里显示错误提示
+        };
+
         const handleWebSocketMessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
@@ -78,6 +96,11 @@ function Led() {
             wsManager.socket.addEventListener('message', handleWebSocketMessage);
         }
 
+        // 添加自定义事件监听器
+        window.addEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+        window.addEventListener('storeUpdated', handleStoreUpdated);
+        window.addEventListener('storeUpdateError', handleStoreUpdateError);
+
         // 组件挂载时恢复状态
         restoreLedStates();
 
@@ -86,6 +109,9 @@ function Led() {
             if (wsManager.socket) {
                 wsManager.socket.removeEventListener('message', handleWebSocketMessage);
             }
+            window.removeEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+            window.removeEventListener('storeUpdated', handleStoreUpdated);
+            window.removeEventListener('storeUpdateError', handleStoreUpdateError);
         };
     }, [dispatch]);
 
@@ -159,7 +185,7 @@ function Led() {
                 <div className="flex flex-col items-center">
                     {lightEle(led3, 3)}
 
-                    <div className='text-s text-muted-foreground mt-1'  >LED3</div>
+                    <div className='text-s text-muted-foreground mt-1' >LED3</div>
                 </div>
 
 

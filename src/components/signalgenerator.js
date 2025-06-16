@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { APISetWaveform, APISignalGeneratorStop } from '../request/api';
+import { setSignalGeneratorData } from '../store_integrated_machine_slice';
+import wsManager from '../request/io';
 
 function SignalGenerator() {
     // 从 Redux store 中获取信号发生器数据
@@ -14,6 +16,7 @@ function SignalGenerator() {
             outputEnabled: false
         };
     });
+    const dispatch = useDispatch();
 
     // 支持的电压档位
     const freqOptions = [
@@ -161,8 +164,118 @@ function SignalGenerator() {
         console.log(`频率档位切换为: ${newFrequency}Hz`);
     };
 
+    // 🌊 处理WebSocket消息中的信号发生器状态同步
+    useEffect(() => {
+        // 状态恢复函数
+        const restoreSignalGeneratorStates = async () => {
+            try {
+                const response = await fetch('/api/device_status');
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('🌊 获取到后端信号发生器状态:', data);
+                
+                const backendSignalState = data.signal_generator_state;
+                if (backendSignalState) {
+                    // 同步本地状态
+                    setWaveform(backendSignalState.waveform || 'sine');
+                    setFrequency(backendSignalState.frequency || 1);
+                    setOutputEnabled(backendSignalState.outputEnabled || false);
+                    
+                    // 更新Redux状态
+                    dispatch(setSignalGeneratorData({
+                        waveform: backendSignalState.waveform,
+                        frequency: backendSignalState.frequency,
+                        outputEnabled: backendSignalState.outputEnabled
+                    }));
+                    
+                    console.log('✅ 信号发生器状态已从后端同步:', backendSignalState);
+                }
+            } catch (error) {
+                console.error('❌ 获取信号发生器状态失败:', error);
+            }
+        };
 
+        // 监听WebSocket状态更新事件
+        const handleDeviceStateUpdate = (event) => {
+            const detail = event.detail;
+            console.log('🌊 信号发生器组件收到设备状态更新:', detail);
+            
+            // 只处理信号发生器相关的状态更新
+            if (detail.device_type === 'signal_generator' && detail.signal_generator_state) {
+                const signalState = detail.signal_generator_state;
+                
+                // 同步本地状态
+                setWaveform(signalState.waveform || waveform);
+                setFrequency(signalState.frequency || frequency);
+                setOutputEnabled(signalState.outputEnabled || false);
+                
+                console.log(`🌊 信号发生器组件已同步状态: 输出${signalState.outputEnabled ? '开启' : '关闭'}, 波形${signalState.waveform}, 频率${signalState.frequency}Hz`);
+            }
+        };
 
+        // 监听Redux store更新成功事件
+        const handleStoreUpdated = (event) => {
+            console.log('✅ 信号发生器组件收到store更新成功通知:', event.detail);
+        };
+
+        // 监听Redux store更新错误事件
+        const handleStoreUpdateError = (event) => {
+            console.error('❌ 信号发生器组件收到store更新错误:', event.detail);
+        };
+
+        // 处理WebSocket消息
+        const handleWebSocketMessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'state_update' && data.device === 'signal_generator') {
+                    console.log('🌊 收到信号发生器状态同步消息:', data);
+                    const signalState = data.signal_generator_state;
+                    if (signalState) {
+                        // 同步本地状态
+                        setWaveform(signalState.waveform || waveform);
+                        setFrequency(signalState.frequency || frequency);
+                        setOutputEnabled(signalState.outputEnabled || false);
+                        
+                        // 更新Redux状态
+                        dispatch(setSignalGeneratorData({
+                            waveform: signalState.waveform,
+                            frequency: signalState.frequency,
+                            outputEnabled: signalState.outputEnabled
+                        }));
+                        
+                        console.log('✅ 信号发生器状态已通过WebSocket同步');
+                    }
+                }
+            } catch (error) {
+                // 忽略非JSON消息
+            }
+        };
+
+        // 监听WebSocket消息
+        if (wsManager.socket) {
+            wsManager.socket.addEventListener('message', handleWebSocketMessage);
+        }
+
+        // 添加自定义事件监听器
+        window.addEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+        window.addEventListener('storeUpdated', handleStoreUpdated);
+        window.addEventListener('storeUpdateError', handleStoreUpdateError);
+
+        // 组件挂载时恢复状态
+        restoreSignalGeneratorStates();
+
+        // 清理监听器
+        return () => {
+            if (wsManager.socket) {
+                wsManager.socket.removeEventListener('message', handleWebSocketMessage);
+            }
+            window.removeEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+            window.removeEventListener('storeUpdated', handleStoreUpdated);
+            window.removeEventListener('storeUpdateError', handleStoreUpdateError);
+        };
+    }, [dispatch, waveform, frequency]); // 依赖dispatch、waveform和frequency
 
     // 监听 Redux store 变化
     useEffect(() => {

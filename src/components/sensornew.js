@@ -14,12 +14,16 @@ function SensorNew() {
     const temperature = useSelector((state) => state.integratedMachine.temperature)
     const humidity = useSelector((state) => state.integratedMachine.humidity)
 
-
     const [loading1, setLoading1] = useState(false)
     const [loading2, setLoading2] = useState(false)
     const [loading3, setLoading3] = useState(false)
     const [loading4, setLoading4] = useState(false)
     const [loading5, setLoading5] = useState(false)
+    
+    // 🕐 新增：自动刷新相关状态
+    const [autoRefresh, setAutoRefresh] = useState(true)
+    const [lastUpdateTime, setLastUpdateTime] = useState(new Date())
+    const [nextUpdateCountdown, setNextUpdateCountdown] = useState(60)
 
     // 手势传感器数值转换成文本
     const [gestureSensorText, setGestureSensorText] = useState("-")
@@ -57,6 +61,98 @@ function SensorNew() {
         };
     }, [gestureSensor]);
 
+    // 🕐 新增：统一的传感器数据刷新函数
+    const refreshAllSensors = async (isAutoRefresh = false) => {
+        if (isAutoRefresh) {
+            console.log('🕐 自动刷新传感器数据...');
+        } else {
+            console.log('🔄 手动刷新传感器数据...');
+        }
+
+        try {
+            // 并行获取所有传感器数据
+            const promises = [
+                APIGetTemperature(),
+                APIGetGesture(), 
+                APIGetLight(),
+                APIGetDistance()
+            ];
+
+            await Promise.all(promises);
+            setLastUpdateTime(new Date());
+            console.log('✅ 传感器数据刷新完成');
+        } catch (error) {
+            console.error('❌ 传感器数据刷新失败:', error);
+        }
+    };
+
+    // 🕐 新增：自动刷新定时器
+    useEffect(() => {
+        let refreshInterval;
+        let countdownInterval;
+
+        if (autoRefresh) {
+            // 组件挂载时立即获取一次数据
+            refreshAllSensors(true);
+
+            // 设置每分钟自动刷新
+            refreshInterval = setInterval(() => {
+                refreshAllSensors(true);
+                setNextUpdateCountdown(60); // 重置倒计时
+            }, 60000); // 60秒 = 60000毫秒
+
+            // 设置倒计时更新
+            countdownInterval = setInterval(() => {
+                setNextUpdateCountdown(prev => {
+                    if (prev <= 1) {
+                        return 60; // 重置为60秒
+                    }
+                    return prev - 1;
+                });
+            }, 1000); // 每秒更新倒计时
+
+            console.log('🕐 传感器自动刷新已启用 (每60秒)');
+        }
+
+        // 清理定时器
+        return () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                console.log('🕐 传感器自动刷新已停止');
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        };
+    }, [autoRefresh]);
+
+    // 🕐 新增：手动刷新单个传感器的函数
+    const refreshSingleSensor = async (sensorType, setLoading) => {
+        setLoading(true);
+        try {
+            switch (sensorType) {
+                case 'temperature':
+                    await APIGetTemperature();
+                    break;
+                case 'gesture':
+                    await APIGetGesture();
+                    break;
+                case 'light':
+                    await APIGetLight();
+                    break;
+                case 'distance':
+                    await APIGetDistance();
+                    break;
+                default:
+                    console.error('未知传感器类型:', sensorType);
+            }
+            setLastUpdateTime(new Date());
+        } catch (error) {
+            console.error(`${sensorType}传感器刷新失败:`, error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const iconEle = (iconName, iconColor = "black", bgColor = "white") => <div style={{
         height: "60px",
@@ -77,10 +173,47 @@ function SensorNew() {
             backgroundColor: "#f6f6f6",
             borderRadius: "5px"
         }}>
-            {/* 标题和副标题 */}
+            {/* 标题和自动刷新控制 */}
             <div className='mb-2'>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: "center" }}>
                     <h2 className="text-xl font-semibold text-gray-900">传感器</h2>
+                    
+                    {/* 🕐 新增：自动刷新控制面板 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        {/* 自动刷新开关 */}
+                        <label className="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={autoRefresh}
+                                onChange={(e) => setAutoRefresh(e.target.checked)}
+                            />
+                            <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span className="ml-2 text-sm font-medium text-gray-700">
+                                自动刷新
+                            </span>
+                        </label>
+
+                        {/* 状态信息 */}
+                        <div className="text-xs text-gray-500">
+                            {autoRefresh ? (
+                                <div>
+                                    <div>下次更新: {nextUpdateCountdown}秒</div>
+                                    <div>上次更新: {lastUpdateTime.toLocaleTimeString()}</div>
+                                </div>
+                            ) : (
+                                <div>自动刷新已关闭</div>
+                            )}
+                        </div>
+
+                        {/* 手动全部刷新按钮 */}
+                        <button
+                            onClick={() => refreshAllSensors(false)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded transition-colors"
+                        >
+                            全部刷新
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -101,15 +234,9 @@ function SensorNew() {
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading4 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={
-                                        async () => {
-                                            setLoading4(true)
-                                            await APIGetTemperature()
-                                            setLoading4(false)
-                                        }
-                                    }></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('temperature', setLoading4)}></span>
                             }
                         </div>
                     </div>
@@ -131,15 +258,9 @@ function SensorNew() {
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading5 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={
-                                        async () => {
-                                            setLoading5(true)
-                                            await APIGetTemperature()
-                                            setLoading5(false)
-                                        }
-                                    }></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('temperature', setLoading5)}></span>
                             }
                         </div>
                     </div>
@@ -161,20 +282,13 @@ function SensorNew() {
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading3 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={
-                                        async () => {
-                                            setLoading3(true)
-                                            await APIGetLight()
-                                            setLoading3(false)
-                                        }
-                                    }></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('light', setLoading3)}></span>
                             }
                         </div>
                     </div>
                 </div>
-
 
                 {/* 手势传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
@@ -184,25 +298,16 @@ function SensorNew() {
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
                             <div className="text-m text-muted-foreground" >手势传感器</div>
                             <div className="text-2xl font-mono font-bold">
-                                {/* 25.2 */}
                                 {gestureSensorText}
-
-                                {/* <span style={{ fontSize: "20px", fontWeight: "normal" }}>℃</span> */}
                             </div>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading1 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={
-                                        async () => {
-                                            setLoading1(true)
-                                            await APIGetGesture()
-                                            setLoading1(false)
-                                        }
-                                    }></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('gesture', setLoading1)}></span>
                             }
                         </div>
                     </div>
@@ -224,24 +329,22 @@ function SensorNew() {
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading2 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={
-                                        async () => {
-                                            setLoading2(true)
-                                            await APIGetDistance()
-                                            setLoading2(false)
-                                        }
-                                    }></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('distance', setLoading2)}></span>
                             }
                         </div>
                     </div>
                 </div>
-
-
-
-
             </div>
+
+            {/* 🕐 新增：添加旋转动画的CSS */}
+            <style jsx>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 }

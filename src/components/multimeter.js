@@ -68,6 +68,52 @@ function Multimeter() {
         restoreDeviceState();
     }, [restoreDeviceState]);
 
+    // 🚀 新增：WebSocket状态更新事件监听
+    useEffect(() => {
+        const handleDeviceStateUpdate = (event) => {
+            const { device_type, device_state, multimeter_mode, is_on } = event.detail;
+            
+            console.log('🔬 万用表收到设备状态更新事件:', event.detail);
+            
+            // 只处理万用表状态更新
+            if (device_type === 'multimeter') {
+                console.log(`🔬 更新万用表UI状态: ${is_on ? '开启' : '关闭'} - 模式: ${multimeter_mode}`);
+                
+                // 更新开关状态
+                setIsOn(is_on);
+                
+                // 如果设备开启且有模式信息，更新模式
+                if (is_on && multimeter_mode) {
+                    setCurrentMode(multimeter_mode);
+                    console.log(`✅ 万用表模式已更新为: ${multimeter_mode}`);
+                } else if (!is_on) {
+                    console.log(`✅ 万用表已关闭`);
+                }
+            }
+        };
+
+        const handleStoreUpdate = (event) => {
+            console.log('🔬 万用表收到store更新事件:', event.detail);
+        };
+
+        const handleWebSocketMessage = (event) => {
+            // 监听来自WebSocket的消息
+            console.log('🔬 万用表收到WebSocket消息:', event.detail);
+        };
+
+        // 添加事件监听器
+        window.addEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+        window.addEventListener('storeUpdated', handleStoreUpdate);
+        window.addEventListener('websocketMessage', handleWebSocketMessage);
+
+        // 清理函数
+        return () => {
+            window.removeEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+            window.removeEventListener('storeUpdated', handleStoreUpdate);
+            window.removeEventListener('websocketMessage', handleWebSocketMessage);
+        };
+    }, []); // 空依赖数组，确保只在组件挂载时添加一次监听器
+
     // 添加万用表控制方法
     const controlMultimeter = async (action, mode = null) => {
         switch (action) {

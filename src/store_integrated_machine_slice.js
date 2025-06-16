@@ -25,6 +25,11 @@ const initialState = {
     multimeterValue: '---',
     multimeterUnit: '',
 
+    // 示波器
+    oscilloscope: {
+        isRunning: false,
+        isConnected: false
+    },
 
      // 电源数据
      powerSupply: {
@@ -83,7 +88,15 @@ export const storeIntegratedMachineSlice = createSlice({
             state.multimeterUnit = action.payload.unit;
         },
 
+        // 设置示波器运行状态
+        setOscilloscopeRunning: (state, action) => {
+            state.oscilloscope.isRunning = action.payload;
+        },
 
+        // 设置示波器连接状态
+        setOscilloscopeConnection: (state, action) => {
+            state.oscilloscope.isConnected = action.payload;
+        },
 
         // 设置电源数据
         setPowerSupplyData: (state, action) => {
@@ -137,7 +150,8 @@ export const {
     open_led,
     close_led,
     setMultimeterData,
-
+    setOscilloscopeRunning,
+    setOscilloscopeConnection,
     setPowerSupplyData,
     setPowerSupplyOutput,
     setPowerSupplyConnection,

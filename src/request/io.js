@@ -9,7 +9,8 @@ import {
     close_led,
     setMultimeterData,
     setPowerSupplyData,
-    setSignalGeneratorData
+    setSignalGeneratorData,
+    setOscilloscopeRunning
 } from '../store_integrated_machine_slice';
 
 import {
@@ -77,10 +78,353 @@ class WebSocketManager {
      */
     handleMessage(event) {
         // console.log('收到消息:', event.data);
+        
+        // 尝试解析JSON消息（状态更新等）
+        try {
+            const jsonData = JSON.parse(event.data);
+            
+            // 处理状态更新消息
+            if (jsonData.type === 'state_update') {
+                console.log('🔄 收到设备状态更新:', jsonData.data);
+                this.handleStateUpdate(jsonData.data);
+                return;
+            }
+            
+            // 处理其他JSON消息类型
+            if (jsonData.type === 'led_state_sync') {
+                console.log('🔄 收到LED状态同步:', jsonData.led_states);
+                this.handleLedStateSync(jsonData.led_states);
+                return;
+            }
+            
+        } catch (e) {
+            // 如果不是JSON消息，按原来的方式处理（十六进制数据）
+        }
+        
+        // 处理十六进制数据
         const result = this.processData(event.data);
         if (result) {
             this.updateStore(result);
         }
+    }
+
+    /**
+     * 处理设备状态更新
+     */
+    handleStateUpdate(stateData) {
+        console.log('📱 处理设备状态更新:', stateData);
+        
+        // 更好的方式：直接更新Redux store，而不是刷新页面
+        this.updateStoreFromStateData(stateData);
+        
+        // 发出自定义事件，让组件知道状态已更新（可选）
+        window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+            detail: stateData
+        }));
+        
+        // 如果你确实需要刷新页面，可以取消注释下面这行：
+        // window.location.reload();
+    }
+
+    /**
+     * 根据状态数据更新Redux store
+     */
+    updateStoreFromStateData(stateData) {
+        try {
+            console.log('🔄 开始更新Redux store:', stateData);
+            
+            // 更新LED状态
+            if (stateData.led_states) {
+                Object.entries(stateData.led_states).forEach(([ledNum, isOn]) => {
+                    const action = isOn ? open_led : close_led;
+                    store.dispatch(action({ number: parseInt(ledNum) }));
+                    console.log(`✅ 已更新LED${ledNum}状态: ${isOn ? '开启' : '关闭'}`);
+                });
+            }
+            
+            // 📊 更新示波器状态 - 根据 last_stream_common 判断
+            if (stateData.last_stream_common) {
+                const command_hex = stateData.last_stream_common.toLowerCase();
+                if (command_hex === "080001fe") { // 示波器开启指令
+                    store.dispatch(setOscilloscopeRunning(true));
+                    console.log(`✅ 已更新示波器状态: 运行中`);
+                    
+                    // 发出示波器状态更新事件
+                    window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                        detail: {
+                            device_type: 'oscilloscope',
+                            device_state: 'opened',
+                            device_name: '示波器'
+                        }
+                    }));
+                }
+                // 🔬 处理万用表状态更新 - 根据命令前缀判断
+                else if (command_hex.startsWith('02') || command_hex.startsWith('03') || 
+                         command_hex.startsWith('04') || command_hex.startsWith('05') || 
+                         command_hex.startsWith('06')) {
+                    
+                    const multimeterModeMap = {
+                        '02': 'RES',    // 电阻档
+                        '03': 'CONT',   // 通断档
+                        '04': 'DCV',    // 直流电压档
+                        '05': 'ACV',    // 交流电压档
+                        '06': 'DCA'     // 直流电流档
+                    };
+                    
+                    const device_prefix = command_hex.substring(0, 2);
+                    const mode = multimeterModeMap[device_prefix];
+                    
+                    if (mode) {
+                        console.log(`🔬 检测到万用表开启状态: ${mode}档`);
+                        
+                        // 发出万用表状态更新事件
+                        window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                            detail: {
+                                device_type: 'multimeter',
+                                device_state: 'opened',
+                                device_name: '万用表',
+                                multimeter_mode: mode,
+                                is_on: true
+                            }
+                        }));
+                    }
+                }
+            } else {
+                // last_stream_common 为 null 表示设备关闭
+                store.dispatch(setOscilloscopeRunning(false));
+                console.log(`✅ 已更新示波器状态: 已停止`);
+                
+                // 清空万用表数据
+                store.dispatch(setMultimeterData({ value: null, unit: null }));
+                console.log(`✅ 已清空万用表数据`);
+                
+                // 发出设备关闭事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'all_devices',
+                        device_state: 'closed',
+                        device_name: '所有设备'
+                    }
+                }));
+                
+                // 发出万用表关闭事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'multimeter',
+                        device_state: 'closed',
+                        device_name: '万用表',
+                        is_on: false
+                    }
+                }));
+            }
+            
+            // 📊 更新示波器状态 - 处理直接的device_type字段（兼容性）
+            if (stateData.device_type === 'oscilloscope' || stateData.device === 'oscilloscope') {
+                const isRunning = stateData.device_state === 'opened' || stateData.state === 'opened';
+                store.dispatch(setOscilloscopeRunning(isRunning));
+                console.log(`✅ 已更新示波器状态(兼容模式): ${isRunning ? '运行中' : '已停止'}`);
+                
+                // 发出示波器状态更新事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'oscilloscope',
+                        device_state: stateData.device_state || stateData.state,
+                        device_name: '示波器'
+                    }
+                }));
+            }
+            
+            // 🔋 更新电源状态 - 根据 device_type 判断
+            if (stateData.device_type === 'power_supply' || stateData.device === 'power_supply') {
+                console.log(`🔋 检测到电源状态变化:`, stateData.power_supply_state);
+                
+                if (stateData.power_supply_state) {
+                    const powerState = stateData.power_supply_state;
+                    
+                    // 更新Redux中的电源状态
+                    store.dispatch(setPowerSupplyData({
+                        setVoltage: powerState.setVoltage,
+                        actualVoltage: powerState.actualVoltage,
+                        outputEnabled: powerState.outputEnabled
+                    }));
+                    
+                    console.log(`✅ 已更新电源状态: 输出${powerState.outputEnabled ? '开启' : '关闭'}, 设置电压${powerState.setVoltage}V, 实际电压${powerState.actualVoltage}V`);
+                    
+                    // 发出电源状态更新事件，让组件更新UI状态
+                    window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                        detail: {
+                            device_type: 'power_supply',
+                            device_state: stateData.device_state || stateData.state,
+                            device_name: stateData.device_name || '直流电源',
+                            power_supply_state: powerState
+                        }
+                    }));
+                }
+            }
+            
+            // 🔋 处理电源状态变化 - 通用处理（兼容性）
+            if (stateData.power_supply_state) {
+                const powerState = stateData.power_supply_state;
+                console.log(`🔋 通用电源状态更新:`, powerState);
+                
+                // 更新Redux中的电源状态
+                store.dispatch(setPowerSupplyData({
+                    setVoltage: powerState.setVoltage,
+                    actualVoltage: powerState.actualVoltage,
+                    outputEnabled: powerState.outputEnabled
+                }));
+                
+                console.log(`✅ 已更新电源状态(通用): 输出${powerState.outputEnabled ? '开启' : '关闭'}, 设置电压${powerState.setVoltage}V, 实际电压${powerState.actualVoltage}V`);
+                
+                // 发出电源状态更新事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'power_supply',
+                        device_state: 'updated',
+                        device_name: '直流电源',
+                        power_supply_state: powerState
+                    }
+                }));
+            }
+            
+            // 🌊 更新信号发生器状态 - 根据 device_type 判断
+            if (stateData.device_type === 'signal_generator' || stateData.device === 'signal_generator') {
+                console.log(`🌊 检测到信号发生器状态变化:`, stateData.signal_generator_state);
+                
+                if (stateData.signal_generator_state) {
+                    const signalState = stateData.signal_generator_state;
+                    
+                    // 更新Redux中的信号发生器状态
+                    store.dispatch(setSignalGeneratorData({
+                        waveform: signalState.waveform,
+                        frequency: signalState.frequency,
+                        outputEnabled: signalState.outputEnabled
+                    }));
+                    
+                    console.log(`✅ 已更新信号发生器状态: 输出${signalState.outputEnabled ? '开启' : '关闭'}, 波形${signalState.waveform}, 频率${signalState.frequency}Hz`);
+                    
+                    // 发出信号发生器状态更新事件，让组件更新UI状态
+                    window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                        detail: {
+                            device_type: 'signal_generator',
+                            device_state: stateData.device_state || stateData.state,
+                            device_name: stateData.device_name || '信号发生器',
+                            signal_generator_state: signalState
+                        }
+                    }));
+                }
+            }
+            
+            // 🌊 处理信号发生器状态变化 - 通用处理（兼容性）
+            if (stateData.signal_generator_state) {
+                const signalState = stateData.signal_generator_state;
+                console.log(`🌊 通用信号发生器状态更新:`, signalState);
+                
+                // 更新Redux中的信号发生器状态
+                store.dispatch(setSignalGeneratorData({
+                    waveform: signalState.waveform,
+                    frequency: signalState.frequency,
+                    outputEnabled: signalState.outputEnabled
+                }));
+                
+                console.log(`✅ 已更新信号发生器状态(通用): 输出${signalState.outputEnabled ? '开启' : '关闭'}, 波形${signalState.waveform}, 频率${signalState.frequency}Hz`);
+                
+                // 发出信号发生器状态更新事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'signal_generator',
+                        device_state: 'updated',
+                        device_name: '信号发生器',
+                        signal_generator_state: signalState
+                    }
+                }));
+            }
+            
+            // 🔬 更新万用表状态 - 根据 device_type 判断（兼容性）
+            if (stateData.device_type && stateData.device_type.startsWith('multimeter_')) {
+                console.log(`🔬 检测到万用表状态变化: ${stateData.device_type}`);
+                
+                // 根据设备类型确定万用表模式和状态
+                const multimeterModeMap = {
+                    'multimeter_resistance': 'RES',
+                    'multimeter_continuity': 'CONT',
+                    'multimeter_dc_voltage': 'DCV',
+                    'multimeter_ac_voltage': 'ACV',
+                    'multimeter_dc_current': 'DCA'
+                };
+                
+                const mode = multimeterModeMap[stateData.device_type];
+                const isOn = stateData.device_state === 'opened' || stateData.state === 'opened';
+                
+                if (mode) {
+                    console.log(`✅ 已更新万用表状态: ${isOn ? '开启' : '关闭'} - 模式: ${mode}`);
+                    
+                    // 发出万用表状态更新事件，让组件更新UI状态
+                    window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                        detail: {
+                            device_type: 'multimeter',
+                            device_state: stateData.device_state || stateData.state,
+                            device_name: stateData.device_name || '万用表',
+                            multimeter_mode: mode,
+                            is_on: isOn
+                        }
+                    }));
+                }
+            }
+            
+            // 🔬 处理万用表关闭状态 - 当 last_stream_common 为 null 且之前是万用表状态
+            if (stateData.last_stream_common === null) {
+                console.log(`🔬 检测到设备关闭，可能包括万用表`);
+                
+                // 清空万用表数据
+                store.dispatch(setMultimeterData({ value: null, unit: null }));
+                console.log(`✅ 已清空万用表数据`);
+                
+                // 发出万用表关闭事件
+                window.dispatchEvent(new CustomEvent('deviceStateUpdate', {
+                    detail: {
+                        device_type: 'multimeter',
+                        device_state: 'closed',
+                        device_name: '万用表',
+                        is_on: false
+                    }
+                }));
+            }
+            
+            // 如果有设备状态信息，可以进一步处理
+            if (stateData.last_stream_common) {
+                console.log(`📡 检测到设备状态变化: ${stateData.last_stream_common}`);
+                // 这里可以根据设备状态触发相应的UI更新
+                // 例如更新按钮状态、指示灯等
+            }
+            
+            console.log('✅ Redux store状态更新完成');
+            
+            // 发出成功事件
+            window.dispatchEvent(new CustomEvent('storeUpdated', {
+                detail: { success: true, updatedData: stateData }
+            }));
+            
+        } catch (error) {
+            console.error('❌ 更新Redux store失败:', error);
+            
+            // 发出错误事件
+            window.dispatchEvent(new CustomEvent('storeUpdateError', {
+                detail: { error: error.message, stateData }
+            }));
+        }
+    }
+
+    /**
+     * 处理LED状态同步
+     */
+    handleLedStateSync(ledStates) {
+        console.log('💡 处理LED状态同步:', ledStates);
+        
+        // 发出LED状态同步事件
+        window.dispatchEvent(new CustomEvent('ledStateSync', {
+            detail: ledStates
+        }));
     }
 
     handleClose(event) {
@@ -274,6 +618,12 @@ class WebSocketManager {
                     const action = result.status === 1 ? open_led : close_led;
                     store.dispatch(action({ number: result.ledNumber }));
                     break;
+                case 'oscilloscope':
+                    // 处理示波器数据 - 这个是从WebSocket接收的实时数据，不需要更新状态
+                    console.log(`📊 示波器实时数据: ${result.value}`);
+                    // 这里不需要更新Redux状态，因为示波器的开关状态是通过API调用管理的
+                    // 实时数据会通过listeners传递给组件
+                    break;
                 case 'res':
                     // 如果需要存储电阻数据，可以在这里添加
                     // Dispatch action 更新 Redux store
@@ -298,14 +648,12 @@ class WebSocketManager {
                     }));
                     break;
                 case 'oscilloscope_off':
-                    console.log('示波器切换到关闭状态');
-                    // 这里可以添加Redux action来更新示波器状态，如果你有相关的状态管理
+                    console.log('📊 示波器切换到关闭状态');
                     // 通知示波器组件关闭
                     this.notifyOscilloscopeListeners(null); // 或者发送特殊值表示关闭
                     break;
                 case 'multimeter_off':
-                    console.log('示波器切换到关闭状态');
-                    // 这里可以添加Redux action来更新示波器状态，如果你有相关的状态管理
+                    console.log('📊 万用表切换到关闭状态');
                     // 清空万用表数据并设置为关闭状态
                     store.dispatch(setMultimeterData({
                         value: null,

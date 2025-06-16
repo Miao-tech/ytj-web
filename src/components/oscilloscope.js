@@ -2,17 +2,31 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactECharts from 'echarts-for-react';
 import wsManager from '../request/io';
 import { APICloseOCC, APIOpenOCC } from '../request/api';
+import { useSelector, useDispatch } from 'react-redux';
+import { setOscilloscopeRunning, setOscilloscopeConnection } from '../store_integrated_machine_slice';
 
 function Oscilloscope() {
-    const [isRunning, setIsRunning] = useState(false);
+    // Redux状态管理
+    const isRunning = useSelector(state => state.integratedMachine?.oscilloscope?.isRunning || false);
+    const isConnected = useSelector(state => state.integratedMachine?.oscilloscope?.isConnected || false);
+    const dispatch = useDispatch();
+    
+    // 本地状态（用于图表数据等）
+    const [localIsRunning, setLocalIsRunning] = useState(false);
     const chartRef = useRef(null);
     const dataPoints = useRef([]);
     const maxDataPoints = 100;
     const updateTimer = useRef(null);
     const lastUpdateTime = useRef(0);
-    const updateInterval = 100; // 增加到100ms，减少更新频率
+    const updateInterval = 100;
     const pendingUpdates = useRef(false);
-    const dataBuffer = useRef([]); // 添加数据缓冲区
+    const dataBuffer = useRef([]);
+
+    // 同步Redux状态到本地状态
+    useEffect(() => {
+        setLocalIsRunning(isRunning);
+        console.log(`📊 示波器状态同步: ${isRunning ? '运行中' : '已停止'}`);
+    }, [isRunning]);
 
     // 新增：从后端恢复设备状态
     const restoreDeviceState = useCallback(async () => {
@@ -25,10 +39,10 @@ function Oscilloscope() {
                 // 如果示波器处于开启状态，同步到前端
                 if (data.device_type === 'oscilloscope' && data.device_state === 'opened') {
                     console.log('恢复示波器开启状态');
-                    setIsRunning(true);
+                    setLocalIsRunning(true);
                 } else {
                     console.log('示波器处于关闭状态或其他设备开启');
-                    setIsRunning(false);
+                    setLocalIsRunning(false);
                 }
             }
         } catch (error) {
@@ -40,6 +54,30 @@ function Oscilloscope() {
     useEffect(() => {
         restoreDeviceState();
     }, [restoreDeviceState]);
+
+    // 🎯 简化的WebSocket状态监听 - 借助device_state_sync.js的逻辑
+    useEffect(() => {
+        const handleDeviceStateUpdate = (event) => {
+            const stateData = event.detail;
+            console.log('📱 示波器收到设备状态更新:', stateData);
+            
+            // 检查是否是示波器状态更新
+            if (stateData.device_type === 'oscilloscope' || stateData.device === 'oscilloscope') {
+                const isRunning = stateData.device_state === 'opened' || stateData.state === 'opened';
+                console.log(`🔄 更新示波器Redux状态: ${isRunning ? '开启' : '关闭'}`);
+                
+                // 直接更新Redux状态，setLocalIsRunning会通过useEffect自动更新
+                dispatch(setOscilloscopeRunning(isRunning));
+            }
+        };
+
+        // 监听全局设备状态更新事件
+        window.addEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+
+        return () => {
+            window.removeEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+        };
+    }, [dispatch]);
 
     // 批量更新图表数据
     const batchUpdateChart = useCallback(() => {
@@ -99,7 +137,7 @@ function Oscilloscope() {
 
     // 优化的添加数据点方法
     const addDataPoint = useCallback((value) => {
-        if (!isRunning) return;
+        if (!localIsRunning) return;
 
         // 将数据添加到缓冲区
         dataBuffer.current.push(value);
@@ -121,25 +159,40 @@ function Oscilloscope() {
                 batchUpdateChart();
             });
         }
-    }, [isRunning, batchUpdateChart]);
+    }, [localIsRunning, batchUpdateChart]);
 
-    // 添加示波器控制方法
+    // 添加示波器控制方法（参考LED的完整逻辑）
     const controlOscilloscope = async (isOpen) => {
-        if (isOpen) {
-            await APIOpenOCC();
-        } else {
-            await APICloseOCC();
+        try {
+            if (isOpen) {
+                await APIOpenOCC().then(() => {
+                    // API成功后更新Redux store
+                    dispatch(setOscilloscopeRunning(true));
+                    console.log('✅ 示波器已开启，Redux状态已更新');
+                });
+            } else {
+                await APICloseOCC().then(() => {
+                    // API成功后更新Redux store
+                    dispatch(setOscilloscopeRunning(false));
+                    console.log('✅ 示波器已关闭，Redux状态已更新');
+                });
+            }
+            return true;
+        } catch (error) {
+            console.error('❌ 示波器控制失败:', error);
+            return false;
         }
-        return true;
     }
 
     const handleOscilloscopeControl = async () => {
-        const success = await controlOscilloscope(!isRunning);
+        // 根据当前Redux状态决定操作
+        const newState = !isRunning;
+        const success = await controlOscilloscope(newState);
+        
         if (success) {
-            setIsRunning(!isRunning);
-
-            // 如果停止运行，清理待处理的更新
-            if (isRunning) {
+            // 清理相关状态
+            if (!newState) {
+                // 如果停止运行，清理待处理的更新
                 if (updateTimer.current) {
                     cancelAnimationFrame(updateTimer.current);
                     updateTimer.current = null;
@@ -153,8 +206,8 @@ function Oscilloscope() {
     useEffect(() => {
         const handleOscilloscopeData = (value) => {
             if (value === null) {
-                setIsRunning(false)
-            } else if (isRunning) {
+                setLocalIsRunning(false)
+            } else if (localIsRunning) {
                 addDataPoint(value);
             }
         };
@@ -167,7 +220,7 @@ function Oscilloscope() {
                 cancelAnimationFrame(updateTimer.current);
             }
         };
-    }, [isRunning, addDataPoint]);
+    }, [localIsRunning, addDataPoint]);
 
     // 清理数据的方法
     // const clearData = useCallback(() => {
@@ -328,7 +381,7 @@ function Oscilloscope() {
                     {/* <button 
                         onClick={clearData}
                         className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded transition-colors"
-                        disabled={isRunning}
+                        disabled={localIsRunning}
                     >
                         清除数据
                     </button> */}
@@ -336,12 +389,12 @@ function Oscilloscope() {
                         <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={isRunning}
+                            checked={localIsRunning}
                             onChange={handleOscilloscopeControl}
                         />
                         <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
                         <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {isRunning ? '运行中' : '已停止'}
+                            {localIsRunning ? '运行中' : '已停止'}
                         </span>
                     </label>
                 </div>

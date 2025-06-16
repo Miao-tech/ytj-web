@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { APIPowerSupplyOff, APIPowerSupplyOn, APISetVoltage } from '../request/api';
+import { setPowerSupplyData } from '../store_integrated_machine_slice';
+import wsManager from '../request/io';
 
 function PowerSupply() {
     // 从 Redux store 中获取电源数据
-
     const powerSupplyData = useSelector((state) => state.integratedMachine.powerSupply);
+    const dispatch = useDispatch();
 
     // 支持的电压档位
     const voltageOptions = [
@@ -103,10 +105,117 @@ function PowerSupply() {
     };
 
 
-    // 监听 Redux store 中的电源数据变化
+    // 🔋 处理WebSocket消息中的电源状态同步
     useEffect(() => {
-        console.log('电源数据更新:', powerSupplyData);
-    }, [powerSupplyData]);
+        // 状态恢复函数
+        const restorePowerSupplyStates = async () => {
+            try {
+                const response = await fetch('/api/device_status');
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('🔋 获取到后端电源状态:', data);
+                
+                const backendPowerState = data.power_supply_state;
+                if (backendPowerState) {
+                    // 同步本地状态
+                    setVoltage(backendPowerState.setVoltage || 1.0);
+                    setOutputEnabled(backendPowerState.outputEnabled || false);
+                    
+                    // 更新Redux状态
+                    dispatch(setPowerSupplyData({
+                        setVoltage: backendPowerState.setVoltage,
+                        actualVoltage: backendPowerState.actualVoltage,
+                        outputEnabled: backendPowerState.outputEnabled
+                    }));
+                    
+                    console.log('✅ 电源状态已从后端同步:', backendPowerState);
+                }
+            } catch (error) {
+                console.error('❌ 获取电源状态失败:', error);
+            }
+        };
+
+        // 监听WebSocket状态更新事件
+        const handleDeviceStateUpdate = (event) => {
+            const detail = event.detail;
+            console.log('🔋 电源组件收到设备状态更新:', detail);
+            
+            // 只处理电源相关的状态更新
+            if (detail.device_type === 'power_supply' && detail.power_supply_state) {
+                const powerState = detail.power_supply_state;
+                
+                // 同步本地状态
+                setVoltage(powerState.setVoltage || voltage);
+                setOutputEnabled(powerState.outputEnabled || false);
+                
+                console.log(`🔋 电源组件已同步状态: 输出${powerState.outputEnabled ? '开启' : '关闭'}, 电压${powerState.setVoltage}V`);
+            }
+        };
+
+        // 监听Redux store更新成功事件
+        const handleStoreUpdated = (event) => {
+            console.log('✅ 电源组件收到store更新成功通知:', event.detail);
+            // 可以在这里显示成功提示或执行其他操作
+        };
+
+        // 监听Redux store更新错误事件
+        const handleStoreUpdateError = (event) => {
+            console.error('❌ 电源组件收到store更新错误:', event.detail);
+            // 可以在这里显示错误提示
+        };
+
+        // 处理WebSocket消息
+        const handleWebSocketMessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'state_update' && data.device === 'power_supply') {
+                    console.log('🔋 收到电源状态同步消息:', data);
+                    const powerState = data.power_supply_state;
+                    if (powerState) {
+                        // 同步本地状态
+                        setVoltage(powerState.setVoltage || voltage);
+                        setOutputEnabled(powerState.outputEnabled || false);
+                        
+                        // 更新Redux状态
+                        dispatch(setPowerSupplyData({
+                            setVoltage: powerState.setVoltage,
+                            actualVoltage: powerState.actualVoltage,
+                            outputEnabled: powerState.outputEnabled
+                        }));
+                        
+                        console.log('✅ 电源状态已通过WebSocket同步');
+                    }
+                }
+            } catch (error) {
+                // 忽略非JSON消息
+            }
+        };
+
+        // 监听WebSocket消息
+        if (wsManager.socket) {
+            wsManager.socket.addEventListener('message', handleWebSocketMessage);
+        }
+
+        // 添加自定义事件监听器
+        window.addEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+        window.addEventListener('storeUpdated', handleStoreUpdated);
+        window.addEventListener('storeUpdateError', handleStoreUpdateError);
+
+        // 组件挂载时恢复状态
+        restorePowerSupplyStates();
+
+        // 清理监听器
+        return () => {
+            if (wsManager.socket) {
+                wsManager.socket.removeEventListener('message', handleWebSocketMessage);
+            }
+            window.removeEventListener('deviceStateUpdate', handleDeviceStateUpdate);
+            window.removeEventListener('storeUpdated', handleStoreUpdated);
+            window.removeEventListener('storeUpdateError', handleStoreUpdateError);
+        };
+    }, [dispatch, voltage]); // 依赖dispatch和voltage
 
 
     return (
