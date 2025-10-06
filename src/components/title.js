@@ -15,20 +15,15 @@ function Title() {
                     </div>
                     <div>
                         <h1
-                            className="mb-1 text-2xl font-semibold"
-                            style={{
-                                background: "-webkit-linear-gradient(top, rgb(0 0 0), rgb(255 16 16)) text",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent"
-                            }}>
-                            图克一体机硬件设备平台
+                            className="mb-1 text-2xl font-semibold text-white">
+                            济南工匠学院一体机硬件设备平台
                         </h1>
-                        <p className="text-sm font-medium text-body-color" style={{ color: "#7f7f7f" }}>
+                        <p className="text-sm font-medium text-white">
                             专注AI教学硬件设备教育
                         </p>
                     </div>
                 </div>
-                <div>
+                {/* <div>
                     <button
                         onClick={handleChatInspectorClick}
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
@@ -42,7 +37,7 @@ function Title() {
                     >
                         AI对话控制
                     </button>
-                </div>
+                </div> */}
             </div>
         </div>
     </section>

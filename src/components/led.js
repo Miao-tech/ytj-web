@@ -161,69 +161,69 @@ function Led() {
 
     return (
         <div className="py-[10px] mx-auto px-4 sm:container mt-[10px] pb-6" style={{
-            backgroundColor: "#f6f6f6",
+            backgroundColor: "#1a1d2e",
             borderRadius: "10px"
         }}>
             <div className='mb-2'>
-                <h2 className="text-xl font-semibold text-gray-900">LED灯控制台</h2>
+                <h2 className="text-xl font-semibold text-white">LED灯控制台</h2>
                 {/* <p className="text-sm text-gray-600">LED灯控制台</p> */}
             </div>
 
-            <div className='grid grid-cols-9 gap-2 sm:container bg-white pb-6 rounded-lg shadow-sm border pt-4'>
+            <div className='grid grid-cols-9 gap-2 sm:container pb-6 rounded-lg shadow-sm border pt-4' style={{ backgroundColor: "#252a3d" }}>
                 <div className="flex flex-col items-center">
                     {lightEle(led1, 1)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED1</div>
+                    <div className='text-s text-white mt-1' >LED1</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led2, 2)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED2</div>
+                    <div className='text-s text-white mt-1' >LED2</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led3, 3)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED3</div>
+                    <div className='text-s text-white mt-1' >LED3</div>
                 </div>
 
 
                 <div className="flex flex-col items-center">
                     {lightEle(led4, 4)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED4</div>
+                    <div className='text-s text-white mt-1' >LED4</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led5, 5)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED5</div>
+                    <div className='text-s text-white mt-1' >LED5</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led6, 6)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED6</div>
+                    <div className='text-s text-white mt-1' >LED6</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led7, 7)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED7</div>
+                    <div className='text-s text-white mt-1' >LED7</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led8, 8)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED8</div>
+                    <div className='text-s text-white mt-1' >LED8</div>
                 </div>
 
 
                 <div className="flex flex-col items-center">
                     {lightEle(led9, 9)}
 
-                    <div className='text-s text-muted-foreground mt-1' >LED9</div>
+                    <div className='text-s text-white mt-1' >LED9</div>
                 </div>
             </div>
         </div>

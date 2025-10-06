@@ -283,12 +283,12 @@ function SignalGenerator() {
     }, [signalGeneratorData]);
 
     return (
-        <div className="mx-auto px-4 sm:container pt-[10px] pb-[20px] mt-[10px] bg-[#f6f6f6] rounded-[10px]">
+        <div className="mx-auto px-4 sm:container pt-[10px] pb-[20px] mt-[10px] rounded-[10px]" style={{ backgroundColor: "#1a1d2e" }}>
             {/* 标题和总开关 */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900">信号发生器</h2>
-                    <p className="text-sm text-gray-600">生成各种波形信号</p>
+                    <h2 className="text-xl font-semibold text-white">信号发生器</h2>
+                    <p className="text-sm text-white">生成各种波形信号</p>
                 </div>
                 <label className="inline-flex items-center cursor-pointer">
                     <input
@@ -298,7 +298,7 @@ function SignalGenerator() {
                         onChange={handleOutputToggle}
                     />
                     <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    <span className="ml-2 text-sm font-medium text-white">
                         {outputEnabled ? '输出开启' : '输出关闭'}
                     </span>
                 </label>
@@ -306,12 +306,12 @@ function SignalGenerator() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 左侧：控制面板 */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h3 className="text-lg font-medium mb-4 text-gray-800">信号控制</h3>
+                <div className="p-6 rounded-lg shadow-sm border" style={{ backgroundColor: "#252a3d" }}>
+                    <h3 className="text-lg font-medium mb-4 text-white">信号控制</h3>
 
                     {/* 波形选择 */}
                     <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">波形选择</label>
+                        <label className="block text-sm font-medium text-white mb-3">波形选择</label>
                         <div className="grid grid-cols-3 gap-2">
                             {waveformOptions.map((option) => (
                                 <button
@@ -337,7 +337,7 @@ function SignalGenerator() {
                     {/* 频率控制 */}
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-2">
-                            <label className="text-gray-700">频率</label>
+                            <label className="text-white">频率</label>
                             <span className="font-mono text-blue-600">{formatFrequency(frequency)}</span>
                         </div>
                         {/* 自定义ToggleGroup样式 */}
@@ -376,8 +376,8 @@ function SignalGenerator() {
                 </div>
 
                 {/* 右侧：波形预览和状态显示 */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h3 className="text-lg font-medium mb-4 text-gray-800">波形预览</h3>
+                <div className="p-6 rounded-lg shadow-sm border" style={{ backgroundColor: "#252a3d" }}>
+                    <h3 className="text-lg font-medium mb-4 text-white">波形预览</h3>
 
                     {/* 波形显示区域 */}
                     <div className={`h-40 border rounded-md p-2 mb-4 ${outputEnabled ? 'bg-black' : 'bg-gray-800'}`}>
@@ -387,14 +387,14 @@ function SignalGenerator() {
                     {/* 参数显示 */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-600 mb-1">波形类型</div>
-                            <div className="text-sm font-semibold text-gray-800">
+                            <div className="text-xs text-gray-300 mb-1">波形类型</div>
+                            <div className="text-sm font-semibold text-white">
                                 {waveformOptions.find(w => w.value === waveform)?.label}
                             </div>
                         </div>
 
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-600 mb-1">频率</div>
+                            <div className="text-xs text-gray-300 mb-1">频率</div>
                             <div className="text-sm font-semibold text-blue-600">
                                 {formatFrequency(frequency)}
                             </div>
@@ -402,7 +402,7 @@ function SignalGenerator() {
 
 
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-600 mb-1">输出状态</div>
+                            <div className="text-xs text-gray-300 mb-1">输出状态</div>
                             <div className={`text-sm font-semibold ${outputEnabled ? 'text-green-600' : 'text-gray-500'}`}>
                                 {outputEnabled ? '运行中' : '已停止'}
                             </div>

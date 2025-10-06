@@ -13,7 +13,7 @@ import SensorNew from "./components/sensornew"
 
 function App() {
   return (
-    <div className="App">
+    <div className="App" style={{ backgroundColor: "#1a1d2e", minHeight: "100vh" }}>
       {/* 大标题 */}
       <Title />
 

@@ -219,12 +219,12 @@ function PowerSupply() {
 
 
     return (
-        <div className="mx-auto px-4 sm:container pt-[10px] pb-[20px] mt-[10px] bg-[#f6f6f6] rounded-[10px]">
+        <div className="mx-auto px-4 sm:container pt-[10px] pb-[20px] mt-[10px] rounded-[10px]" style={{ backgroundColor: "#1a1d2e" }}>
             {/* 标题和副标题 */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900">直流电源</h2>
-                    <p className="text-sm text-gray-600">可调电压电源控制</p>
+                    <h2 className="text-xl font-semibold text-white">直流电源</h2>
+                    <p className="text-sm text-white">可调电压电源控制</p>
                 </div>
                 {/* 总输出开关 */}
                 <label className="inline-flex items-center cursor-pointer">
@@ -235,7 +235,7 @@ function PowerSupply() {
                         onChange={handleOutputToggle}
                     />
                     <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                    <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    <span className="ml-2 text-sm font-medium text-white">
                         {outputEnabled ? '输出开启' : '输出关闭'}
                     </span>
                 </label>
@@ -243,13 +243,13 @@ function PowerSupply() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 左侧：控制面板 */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h3 className="text-lg font-medium mb-4 text-gray-800">输出控制</h3>
+                <div className="p-6 rounded-lg shadow-sm border" style={{ backgroundColor: "#252a3d" }}>
+                    <h3 className="text-lg font-medium mb-4 text-white">输出控制</h3>
 
                     {/* 电压控制 - 改为档位选择 */}
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-3">
-                            <span className="text-gray-600">输出电压</span>
+                            <span className="text-white">输出电压</span>
                             <span className="font-mono text-blue-600">{voltage} V</span>
                         </div>
 
@@ -295,25 +295,25 @@ function PowerSupply() {
                     </div>
 
                     {/* 状态指示 */}
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "#1a1d2e" }}>
                         <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded-full ${outputEnabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-gray-700">输出状态</span>
+                            <span className="text-sm text-white">输出状态</span>
                         </div>
-                        <span className={`text-sm font-medium ${outputEnabled ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`text-sm font-medium ${outputEnabled ? 'text-green-400' : 'text-gray-400'}`}>
                             {outputEnabled ? '启用' : '禁用'}
                         </span>
                     </div>
                 </div>
 
                 {/* 右侧：实时测量显示 */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h3 className="text-lg font-medium mb-4 text-gray-800">实时测量</h3>
+                <div className="p-6 rounded-lg shadow-sm border" style={{ backgroundColor: "#252a3d" }}>
+                    <h3 className="text-lg font-medium mb-4 text-white">实时测量</h3>
 
                     <div className="space-y-4">
                         {/* 输出电压显示 */}
                         <div className="bg-[#1a1a1a] p-4 rounded-lg">
-                            <div className="text-xs mb-1 text-gray-400">输出电压</div>
+                            <div className="text-xs mb-1 text-gray-300">输出电压</div>
                             <div className="flex items-end">
                                 <span className="text-4xl font-mono text-blue-500 leading-none">
                                     {outputEnabled ? formatValue(getActualVoltage(), 2) : formatValue(0.0, 2)}

@@ -239,23 +239,23 @@ function Oscilloscope() {
     // 优化的图表配置
     const options = {
         animation: false,
-        // backgroundColor: '#1a1a1a',
+        backgroundColor: '#000000', // 深黑色背景
         title: {
             // text: '示波器数据波形',
             left: 'center',
             textStyle: {
-                // color: '#f7df1e',
+                color: '#ffffff', // 白色标题
                 fontSize: 18,
                 fontWeight: 'bold'
             }
         },
         tooltip: {
             trigger: 'axis',
-            // backgroundColor: 'rgba(0,0,0,0.8)',
-            // borderColor: '#f7df1e',
-            // textStyle: {
-            // color: '#fff'
-            // },
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            borderColor: '#f7df1e',
+            textStyle: {
+                color: '#fff'
+            },
             formatter: function (params) {
                 const data = params[0];
                 return `时间: ${data.name}<br/>数值: ${data.value?.toFixed(2) || 'N/A'}`;
@@ -270,8 +270,8 @@ function Oscilloscope() {
             bottom: '5%',
             top: '10%',
             containLabel: true,
-            // backgroundColor: '#000',
-            // borderColor: '#333'
+            backgroundColor: '#000000',
+            borderColor: '#333333'
         },
         toolbox: {
             feature: {
@@ -283,7 +283,7 @@ function Oscilloscope() {
                 }
             },
             iconStyle: {
-                // borderColor: '#f7df1e'
+                borderColor: '#f7df1e'
             }
         },
         xAxis: {
@@ -292,16 +292,16 @@ function Oscilloscope() {
             data: [],
             axisLine: {
                 lineStyle: {
-                    // color: '#333'
+                    color: '#333333'
                 }
             },
             axisTick: {
                 lineStyle: {
-                    // color: '#333'
+                    color: '#333333'
                 }
             },
             axisLabel: {
-                // color: '#666',
+                color: '#666666',
                 fontSize: 10,
                 interval: 'auto', // 自动间隔显示标签
                 rotate: 0
@@ -309,7 +309,7 @@ function Oscilloscope() {
             splitLine: {
                 show: true,
                 lineStyle: {
-                    // color: '#222',
+                    color: '#222222',
                     type: 'dashed'
                 }
             }
@@ -318,16 +318,16 @@ function Oscilloscope() {
             type: 'value',
             axisLine: {
                 lineStyle: {
-                    // color: '#333'
+                    color: '#333333'
                 }
             },
             axisTick: {
                 lineStyle: {
-                    // color: '#333'
+                    color: '#333333'
                 }
             },
             axisLabel: {
-                // color: '#666',
+                color: '#666666',
                 fontSize: 10,
                 formatter: function (value) {
                     return value.toFixed(1);
@@ -335,7 +335,7 @@ function Oscilloscope() {
             },
             splitLine: {
                 lineStyle: {
-                    // color: '#222',
+                    color: '#222222',
                     type: 'dashed'
                 }
             },
@@ -351,13 +351,41 @@ function Oscilloscope() {
                 symbol: 'none',
                 lineStyle: {
                     width: 2,
-                    // color: '#f7df1e'
+                    color: '#f7df1e' // 黄色波形线
                 },
                 data: [],
                 // 优化性能的配置
                 large: true, // 开启大数据量优化
                 largeThreshold: 50, // 大数据量阈值
                 sampling: 'lttb' // 降采样策略
+            },
+            // 添加红色参考线
+            {
+                name: '参考线',
+                type: 'line',
+                data: [],
+                lineStyle: {
+                    color: '#ff0000', // 红色参考线
+                    width: 1,
+                    type: 'solid'
+                },
+                symbol: 'none',
+                silent: true, // 不响应交互
+                markLine: {
+                    silent: true,
+                    lineStyle: {
+                        color: '#ff0000',
+                        width: 1
+                    },
+                    data: [
+                        {
+                            yAxis: 0, // 在y=0处画参考线
+                            label: {
+                                show: false
+                            }
+                        }
+                    ]
+                }
             }
         ],
         // 全局性能优化配置
@@ -368,14 +396,14 @@ function Oscilloscope() {
 
     return (
         <div className="mx-auto px-4 sm:container mt-[10px] pb-6" style={{
-            backgroundColor: "#f6f6f6",
+            backgroundColor: "#1a1d2e",
             borderRadius: "10px",
-            position: "relative"
+            position: "relative",
         }}>
             <div className="flex justify-between items-center mb-4 pt-4">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900">示波器图表</h2>
-                    <p className="text-sm text-gray-600">观察电信号随时间变化的特性</p>
+                    <h2 className="text-xl font-semibold text-white">示波器图表</h2>
+                    <p className="text-sm text-white">观察电信号随时间变化的特性</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {/* <button 
@@ -393,14 +421,14 @@ function Oscilloscope() {
                             onChange={handleOscilloscopeControl}
                         />
                         <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                        <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        <span className="ml-2 text-sm font-medium text-white">
                             {localIsRunning ? '运行中' : '已停止'}
                         </span>
                     </label>
                 </div>
             </div>
 
-            <div className="mb-2 text-sm text-gray-600" style={{
+            <div className="mb-2 text-sm text-white" style={{
                 position: "absolute",
                 top: "88px",
                 left: "22px",
@@ -415,10 +443,10 @@ function Oscilloscope() {
             </div>
 
             <ReactECharts
-                className='bg-white'
+                className='bg-black'
                 ref={chartRef}
                 option={options}
-                style={{ height: '400px', borderRadius: "10px", paddingBottom: "10px" }}
+                style={{ height: '400px', borderRadius: "10px", paddingTop: "10px", paddingBottom: "10px", border: "1px solid white" }}
                 notMerge={false} // 改为false，允许合并更新
                 lazyUpdate={true} // 开启延迟更新
             />

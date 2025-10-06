@@ -170,13 +170,13 @@ function SensorNew() {
 
     return (
         <div className="py-[10px] mx-auto px-4 sm:container mt-[10px] pb-6" style={{
-            backgroundColor: "#f6f6f6",
+            backgroundColor: "#1a1d2e",
             borderRadius: "5px"
         }}>
             {/* 标题和自动刷新控制 */}
             <div className='mb-2'>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: "center" }}>
-                    <h2 className="text-xl font-semibold text-gray-900">传感器</h2>
+                    <h2 className="text-xl font-semibold text-white">传感器</h2>
                     
                     {/* 🕐 新增：自动刷新控制面板 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -189,13 +189,13 @@ function SensorNew() {
                                 onChange={(e) => setAutoRefresh(e.target.checked)}
                             />
                             <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span className="ml-2 text-sm font-medium text-gray-700">
+                            <span className="ml-2 text-sm font-medium text-white">
                                 自动刷新
                             </span>
                         </label>
 
                         {/* 状态信息 */}
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-white">
                             {autoRefresh ? (
                                 <div>
                                     <div>下次更新: {nextUpdateCountdown}秒</div>
@@ -217,26 +217,26 @@ function SensorNew() {
                 </div>
             </div>
 
-            <div className='grid grid-cols-5 sm:container bg-white p-6 rounded-lg shadow-sm border'>
+            <div className='grid grid-cols-5 sm:container p-6 rounded-lg shadow-sm border' style={{ backgroundColor: "#252a3d" }}>
                 {/* 温度传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
                         {iconEle('icon-wenduji', 'rgb(245, 94, 80)', 'rgb(244, 214, 212)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-muted-foreground" >温度传感器</div>
-                            <div className="text-2xl font-mono font-bold">
+                            <div className="text-m text-white" >温度传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
                                 {temperature}
-                                <span className="text-muted-foreground text-sm ml-1">°C</span>
+                                <span className="text-white text-sm ml-1">°C</span>
                             </div>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading4 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('temperature', setLoading4)}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('temperature', setLoading4)}></span>
                             }
                         </div>
                     </div>
@@ -248,19 +248,19 @@ function SensorNew() {
                         {iconEle('icon-wenduji', 'rgb(78, 158, 240)', 'rgb(207, 225, 244)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-muted-foreground" >湿度传感器</div>
-                            <div className="text-2xl font-mono font-bold">
+                            <div className="text-m text-white" >湿度传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
                                 {humidity}
-                                <span className="text-muted-foreground text-sm ml-1">%</span>
+                                <span className="text-white text-sm ml-1">%</span>
                             </div>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading5 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('temperature', setLoading5)}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('temperature', setLoading5)}></span>
                             }
                         </div>
                     </div>
@@ -272,19 +272,19 @@ function SensorNew() {
                         {iconEle('icon-a-cellimage_huaban1fuben94', 'rgb(248, 195, 60)', 'rgb(245, 234, 205)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-muted-foreground" >光强度传感器</div>
-                            <div className="text-2xl font-mono font-bold">
+                            <div className="text-m text-white" >光强度传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
                                 {lightIntensitySensor}
-                                <span className="text-muted-foreground text-sm ml-1">Lux</span>
+                                <span className="text-white text-sm ml-1">Lux</span>
                             </div>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading3 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('light', setLoading3)}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('light', setLoading3)}></span>
                             }
                         </div>
                     </div>
@@ -296,8 +296,8 @@ function SensorNew() {
                         {iconEle('icon-a-shoushoushi', 'rgb(97, 175, 91)', 'rgb(214, 230, 214)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-muted-foreground" >手势传感器</div>
-                            <div className="text-2xl font-mono font-bold">
+                            <div className="text-m text-white" >手势传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
                                 {gestureSensorText}
                             </div>
                         </div>
@@ -305,9 +305,9 @@ function SensorNew() {
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading1 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('gesture', setLoading1)}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('gesture', setLoading1)}></span>
                             }
                         </div>
                     </div>
@@ -319,19 +319,19 @@ function SensorNew() {
                         {iconEle('icon-act006', 'rgb(149, 48, 173)', 'rgb(225, 205, 231)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-muted-foreground" >红外传感器</div>
-                            <div className="text-2xl font-mono font-bold">
+                            <div className="text-m text-white" >红外传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
                                 {infraredSensor}
-                                <span className="text-muted-foreground text-sm ml-1">cm</span>
+                                <span className="text-white text-sm ml-1">cm</span>
                             </div>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading2 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite' }}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer" }} onClick={() => refreshSingleSensor('distance', setLoading2)}></span>
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('distance', setLoading2)}></span>
                             }
                         </div>
                     </div>
