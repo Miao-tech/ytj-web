@@ -3,6 +3,7 @@ import {
     setGestureSensor,
     setInfraredSensor,
     setLightIntensitySensor,
+    setBuzzer,
     setTemperature,
     setHumidity,
     open_led,
@@ -159,16 +160,13 @@ class WebSocketManager {
                     }));
                 }
                 // 🔬 处理万用表状态更新 - 根据命令前缀判断
-                else if (command_hex.startsWith('02') || command_hex.startsWith('03') || 
-                         command_hex.startsWith('04') || command_hex.startsWith('05') || 
-                         command_hex.startsWith('06')) {
-                    
+                else if (command_hex.startsWith('02') || command_hex.startsWith('03') ||
+                         command_hex.startsWith('04')) {
+
                     const multimeterModeMap = {
                         '02': 'RES',    // 电阻档
                         '03': 'CONT',   // 通断档
-                        '04': 'DCV',    // 直流电压档
-                        '05': 'ACV',    // 交流电压档
-                        '06': 'DCA'     // 直流电流档
+                        '04': 'DCV'     // 直流电压档
                     };
                     
                     const device_prefix = command_hex.substring(0, 2);
@@ -348,9 +346,7 @@ class WebSocketManager {
                 const multimeterModeMap = {
                     'multimeter_resistance': 'RES',
                     'multimeter_continuity': 'CONT',
-                    'multimeter_dc_voltage': 'DCV',
-                    'multimeter_ac_voltage': 'ACV',
-                    'multimeter_dc_current': 'DCA'
+                    'multimeter_dc_voltage': 'DCV'
                 };
                 
                 const mode = multimeterModeMap[stateData.device_type];
@@ -469,14 +465,20 @@ class WebSocketManager {
 
             // 根据第一个字节判断数据类型并处理
             switch (packet[0]) {
-                case 0x0D: // 手势传感器数据
+                case 0x0D: // 温湿度数据
+                    const temperatureValue = packet[1];
+                    const humidityValue = packet[2];
+                    console.log(`🌡️ 温度: ${temperatureValue}°C, 湿度: ${humidityValue}%`);
                     return {
-                        type: 'gesture',
-                        value: packet[2],
-                        description: '手势传感器数据'
+                        type: 'temperature_humidity',
+                        temperature: temperatureValue,
+                        humidity: humidityValue,
+                        temperatureUnit: '°C',
+                        humidityUnit: '%',
+                        description: '温湿度数据'
                     };
 
-                // LED状态反馈 (0x10-0x18)
+                // LED状态反馈 (0x10-0x1A)
                 case 0x10: return { type: 'led', ledNumber: 1, status: packet[2] };
                 case 0x11: return { type: 'led', ledNumber: 2, status: packet[2] };
                 case 0x12: return { type: 'led', ledNumber: 3, status: packet[2] };
@@ -486,6 +488,8 @@ class WebSocketManager {
                 case 0x16: return { type: 'led', ledNumber: 7, status: packet[2] };
                 case 0x17: return { type: 'led', ledNumber: 8, status: packet[2] };
                 case 0x18: return { type: 'led', ledNumber: 9, status: packet[2] };
+                case 0x19: return { type: 'led', ledNumber: 10, status: packet[2] };
+                case 0x1A: return { type: 'led', ledNumber: 11, status: packet[2] };
 
                 case 0x08: // 示波器数据
                     const oscilloscopeValue = ((packet[1] << 8) | packet[2]) / 100;
@@ -502,38 +506,40 @@ class WebSocketManager {
                         description: '示波器关闭状态'
                     };
 
-                case 0x0E: // 光照度数据
+                case 0x05: // 光强度数据
                     const lightValue = (packet[1] << 8) | packet[2];
-                    console.log(`💡 光照度值: ${lightValue} Lux`);
+                    console.log(`💡 光强度值: ${lightValue} Lux`);
                     return {
                         type: 'light',
                         value: lightValue,
                         unit: 'Lux',
-                        description: '光照度数据'
+                        description: '光强度数据'
                     };
 
-                case 0x0B: // 温湿度数据
-                    const temperatureValue = packet[1];
-                    const humidityValue = packet[2];
-                    console.log(`🌡️ 温度: ${temperatureValue}°C, 湿度: ${humidityValue}%`);
+                case 0x06: // 蜂鸣器数据
+                    const buzzerTime = packet[2];
+                    console.log(`🔔 蜂鸣器时间: ${buzzerTime}`);
                     return {
-                        type: 'temperature_humidity',
-                        temperature: temperatureValue,
-                        humidity: humidityValue,
-                        temperatureUnit: '°C',
-                        humidityUnit: '%',
-                        description: '温湿度数据'
+                        type: 'buzzer',
+                        value: buzzerTime,
+                        description: '蜂鸣器数据'
                     };
 
-                case 0x0C: // 测距数据
-                    const distanceInMm = (packet[1] << 8) | packet[2];
-                    const distanceInCm = distanceInMm / 10;
-                    console.log(`📏 测距值: ${distanceInCm} cm`);
+                case 0x0C: // 超声波传感器数据 (HC-SR04)
+                    const timeInMicroseconds = (packet[1] << 8) | packet[2];
+
+                    // HC-SR04 距离计算（后端返回微秒值）:
+                    // 声速: 340 m/s = 0.034 cm/μs
+                    // 往返距离 = 时间(μs) × 0.034 cm/μs
+                    // 实际距离 = 往返距离 / 2 = 时间(μs) × 0.017
+                    const distanceInCm = parseFloat((timeInMicroseconds * 0.017).toFixed(2));
+
+                    console.log(`📏 HC-SR04超声波传感器 - 时间: ${timeInMicroseconds} μs, 距离: ${distanceInCm} cm`);
                     return {
                         type: 'distance',
                         value: distanceInCm,
                         unit: 'cm',
-                        description: '测距数据'
+                        description: '超声波传感器数据'
                     };
 
                 case 0x01: // 万用表关闭状态数据
@@ -543,19 +549,18 @@ class WebSocketManager {
                         description: '万用表关闭状态'
                     };
 
-                case 0x02: // 万用表数据
-                    const decimalValue = (packet[1] << 8) | packet[2];
-                    // 假设服务器返回的数据中包含了单位信息，或者根据当前模式判断单位
-                    // 这里我们简化处理，假设接收到的数据是电阻值，单位是欧姆 (Ω)
-                    // const multimeterValue = decimalValue; // 根据实际数据格式调整
-                    const resUnit = 'Ω'; // 根据实际数据格式或当前模式调整
+                case 0x02: // 万用表电阻档数据
+                    const resValue = (packet[1] << 8) | packet[2];
+                    console.log(`🔬 万用表电阻档数据: ${resValue} Ω (范围: 0-4096)`);
+                    return { type: 'res', value: resValue, unit: 'Ω' };
 
+                case 0x04: // 万用表直流电压档数据
+                    const dcvValue = (packet[1] << 8) | packet[2];
+                    console.log(`🔬 万用表直流电压档数据: ${dcvValue} V (范围: 0-4096)`);
+                    return { type: 'dcv', value: dcvValue, unit: 'V' };
 
-                    // console.log(`📥 万用表数据: ${Array.from(packet).map(n => '0x' + n.toString(16).padStart(2, '0').toUpperCase()).join(' ')} (十进制值: ${decimalValue})`);
-                    return { type: 'res', value: decimalValue, unit: resUnit };
-
-                case 0x09: // 电源数据 (假设0x0F是电源数据的命令字节)
-                    const voltage = ((packet[1] << 8) | packet[2]) / 100; // 电压，除以100转换为V
+                case 0x09: // 电源数据
+                    const voltage = ((packet[1] << 8) | packet[2]) / 10; // 电压，除以10转换为V
 
                     console.log(`🔌 电源数据: ${voltage}V`);
                     return {
@@ -609,6 +614,9 @@ class WebSocketManager {
                 case 'light':
                     store.dispatch(setLightIntensitySensor(result.value));
                     break;
+                case 'buzzer':
+                    store.dispatch(setBuzzer(result.value));
+                    break;
                 case 'temperature_humidity':
                     store.dispatch(setTemperature(result.temperature));
                     store.dispatch(setHumidity(result.humidity));
@@ -625,10 +633,14 @@ class WebSocketManager {
                     // 实时数据会通过listeners传递给组件
                     break;
                 case 'res':
-                    // 如果需要存储电阻数据，可以在这里添加
-                    // Dispatch action 更新 Redux store
+                    // 电阻档数据
                     store.dispatch(setMultimeterData({ value: result.value, unit: result.unit }));
-                    // console.log('电阻数据已接收:', result.value);
+                    console.log('📊 万用表电阻档数据已更新:', result.value, result.unit);
+                    break;
+                case 'dcv':
+                    // 直流电压档数据
+                    store.dispatch(setMultimeterData({ value: result.value, unit: result.unit }));
+                    console.log('📊 万用表直流电压档数据已更新:', result.value, result.unit);
                     break;
                 case 'power_supply':
                     console.log('正在更新电源数据到Redux:', result);

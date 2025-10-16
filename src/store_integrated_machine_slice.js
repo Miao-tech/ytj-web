@@ -5,10 +5,11 @@ const initialState = {
     temperature: 0,
     humidity: 0,
 
-    // 手势、红外、光照强度传感器
+    // 手势、超声波、光照强度传感器
     gestureSensor: 0,
-    infraredSensor: 0,
+    infraredSensor: 0, // 实际上是超声波传感器，变量名保持不变以保持兼容性
     lightIntensitySensor: 0,
+    buzzer: 0, // 蜂鸣器时间（0-255）
 
     // LED
     led1: false,
@@ -20,6 +21,8 @@ const initialState = {
     led7: false,
     led8: false,
     led9: false,
+    led10: false,
+    led11: false,
 
     // 万用表
     multimeterValue: '---',
@@ -33,7 +36,7 @@ const initialState = {
 
      // 电源数据
      powerSupply: {
-        setVoltage: 5.0,
+        setVoltage: 2.0,
         actualVoltage: 0.0,
         outputEnabled: false,
         isConnected: false
@@ -41,7 +44,7 @@ const initialState = {
     // 信号发生器数据
     signalGenerator: {
         waveform: 'sine',
-        frequency: 1000,
+        frequency: 1,
         amplitude: 1.0,
         dcOffset: 0.0,
         outputEnabled: false,
@@ -57,13 +60,17 @@ export const storeIntegratedMachineSlice = createSlice({
         setGestureSensor: (state, action) => {
             state.gestureSensor = action.payload
         },
-        // 设置红外传感器
+        // 设置超声波传感器（变量名保持 infraredSensor 以保持兼容性）
         setInfraredSensor: (state, action) => {
             state.infraredSensor = action.payload
         },
         // 设置光照强度传感器
         setLightIntensitySensor: (state, action) => {
             state.lightIntensitySensor = action.payload
+        },
+        // 设置蜂鸣器
+        setBuzzer: (state, action) => {
+            state.buzzer = action.payload
         },
         // 设置温度
         setTemperature: (state, action) => {
@@ -145,6 +152,7 @@ export const {
     setGestureSensor,
     setInfraredSensor,
     setLightIntensitySensor,
+    setBuzzer,
     setHumidity,
     setTemperature,
     open_led,

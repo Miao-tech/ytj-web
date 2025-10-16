@@ -3,8 +3,6 @@ import { useSelector } from 'react-redux';
 import {
     APICloseMultimeter,
     APIOpenDCV,
-    APIOpenACV,
-    APIOpenDCA,
     APIOpenCont,
     APIOpenResistense,
 } from '../request/api';
@@ -19,11 +17,9 @@ function Multimeter() {
     const [isOn, setIsOn] = useState(false); // 添加总开关状态
 
     const modes = [
-        { key: 'DCV', label: 'DCV', subLabel: '直流电压', unit: 'V', color: 'text-blue-500' },
-        { key: 'ACV', label: 'ACV', subLabel: '交流电压', unit: 'V', color: 'text-yellow-500' },
-        { key: 'DCA', label: 'DCA', subLabel: '直流电流', unit: 'A', color: 'text-blue-500' },
-        { key: 'CONT', label: 'CONT', subLabel: '通断蜂鸣器', unit: '', color: 'text-blue-500' },
         { key: 'RES', label: 'Ω', subLabel: '电阻', unit: 'Ω', color: 'text-green-500' },
+        { key: 'CONT', label: 'CONT', subLabel: '通断蜂鸣器', unit: '', color: 'text-blue-500' },
+        { key: 'DCV', label: 'DCV', subLabel: '直流电压', unit: 'V', color: 'text-blue-500' },
     ];
 
     // 新增：从后端恢复设备状态
@@ -42,10 +38,8 @@ function Multimeter() {
                     // 根据设备类型设置正确的模式
                     const modeMap = {
                         'multimeter_resistance': 'RES',
-                        'multimeter_continuity': 'CONT', 
-                        'multimeter_dc_voltage': 'DCV',
-                        'multimeter_ac_voltage': 'ACV',
-                        'multimeter_dc_current': 'DCA'
+                        'multimeter_continuity': 'CONT',
+                        'multimeter_dc_voltage': 'DCV'
                     };
                     
                     const mode = modeMap[data.device_type];
@@ -126,21 +120,15 @@ function Multimeter() {
                 break;
             case 'changeMode':
                 switch (mode) {
-                    case 'DCV':
-                        await APIOpenDCV();
-                        break;
-                    case 'ACV':
-                        await APIOpenACV();
-                        break;
-                    case 'DCA':
-                        await APIOpenDCA();
+                    case 'RES':
+                        // 电阻档
+                        await APIOpenResistense();
                         break;
                     case 'CONT':
                         await APIOpenCont();
                         break;
-                    case 'RES':
-                        // 电阻档
-                        await APIOpenResistense();
+                    case 'DCV':
+                        await APIOpenDCV();
                         break;
                     default:
                         console.error('未知万用表模式:', mode);
@@ -170,10 +158,8 @@ function Multimeter() {
     // 验证返回的单位是否与当前模式匹配
     const isUnitValid = (receivedUnit, currentMode) => {
         const modeUnitMap = {
-            'DCV': ['V', 'mV', 'kV'],
-            'ACV': ['V', 'mV', 'kV'],
-            'DCA': ['A', 'mA', 'μA', 'uA'],
-            'RES': ['Ω', 'kΩ', 'MΩ', 'ohm', 'kohm', 'mohm']
+            'RES': ['Ω', 'kΩ', 'MΩ', 'ohm', 'kohm', 'mohm'],
+            'DCV': ['V', 'mV', 'kV']
         };
 
         const validUnits = modeUnitMap[currentMode] || [];
@@ -291,12 +277,12 @@ function Multimeter() {
 
 
             {/* 模式按钮 */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 {modes.map((mode) => (
                     <button
                         key={mode.key}
-                        className={`flex flex-col items-center justify-center py-3 px-2 rounded-[5px] transition-colors duration-200 
-                                   ${currentMode === mode.key && isOn ? 'bg-[#3b82f6] text-white' : 'bg-gray-300 text-gray-800 hover:bg-gray-400'} 
+                        className={`flex flex-col items-center justify-center py-3 px-2 rounded-[5px] transition-colors duration-200
+                                   ${currentMode === mode.key && isOn ? 'bg-[#3b82f6] text-white' : 'bg-gray-300 text-gray-800 hover:bg-gray-400'}
                                    ${!isOn && 'opacity-50 cursor-not-allowed'}`}
                         onClick={() => handleModeChange(mode.key)}
                         disabled={!isOn}

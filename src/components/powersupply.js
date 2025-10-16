@@ -11,13 +11,13 @@ function PowerSupply() {
 
     // 支持的电压档位
     const voltageOptions = [
-        { value: 0.1, label: '0.1 V' },
-        { value: 1.0, label: '1.0 V' },
-        { value: 10.0, label: '10.0 V' },
-        { value: 10.1, label: '10.1 V' }
+        { value: 2.0, label: '2.0 V' },
+        { value: 3.0, label: '3.0 V' },
+        { value: 5.0, label: '5.0 V' },
+        { value: 12.0, label: '12.0 V' }
     ];
 
-    const [voltage, setVoltage] = useState(1.0);
+    const [voltage, setVoltage] = useState(2.0);
     // const [currentLimit, setCurrentLimit] = useState(1.0);
     const [outputEnabled, setOutputEnabled] = useState(false);
     const [isAdjusting] = useState(false);
@@ -120,7 +120,7 @@ function PowerSupply() {
                 const backendPowerState = data.power_supply_state;
                 if (backendPowerState) {
                     // 同步本地状态
-                    setVoltage(backendPowerState.setVoltage || 1.0);
+                    setVoltage(backendPowerState.setVoltage || 2.0);
                     setOutputEnabled(backendPowerState.outputEnabled || false);
                     
                     // 更新Redux状态

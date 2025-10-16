@@ -14,6 +14,8 @@ function Led() {
     const led7 = useSelector((state) => state.integratedMachine.led7)
     const led8 = useSelector((state) => state.integratedMachine.led8)
     const led9 = useSelector((state) => state.integratedMachine.led9)
+    const led10 = useSelector((state) => state.integratedMachine.led10)
+    const led11 = useSelector((state) => state.integratedMachine.led11)
     const dispatch = useDispatch()
 
     // 处理WebSocket消息中的LED状态同步
@@ -31,7 +33,7 @@ function Led() {
                 const backendLedStates = data.ui_state?.led_states;
                 if (backendLedStates) {
                     // 根据后端状态更新Redux store
-                    for (let ledNum = 1; ledNum <= 9; ledNum++) {
+                    for (let ledNum = 1; ledNum <= 11; ledNum++) {
                         const isOn = backendLedStates[`led${ledNum}`];
                         if (isOn !== undefined) {
                             if (isOn) {
@@ -73,7 +75,7 @@ function Led() {
                     console.log('收到LED状态同步消息:', data);
                     const ledStates = data.led_states;
                     if (ledStates) {
-                        for (let ledNum = 1; ledNum <= 9; ledNum++) {
+                        for (let ledNum = 1; ledNum <= 11; ledNum++) {
                             const isOn = ledStates[ledNum.toString()];
                             if (isOn !== undefined) {
                                 if (isOn) {
@@ -169,61 +171,60 @@ function Led() {
                 {/* <p className="text-sm text-gray-600">LED灯控制台</p> */}
             </div>
 
-            <div className='grid grid-cols-9 gap-2 sm:container pb-6 rounded-lg shadow-sm border pt-4' style={{ backgroundColor: "#252a3d" }}>
+            <div className='grid grid-cols-11 gap-2 sm:container pb-6 rounded-lg shadow-sm border pt-4' style={{ backgroundColor: "#252a3d" }}>
                 <div className="flex flex-col items-center">
                     {lightEle(led1, 1)}
-
                     <div className='text-s text-white mt-1' >LED1</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led2, 2)}
-
                     <div className='text-s text-white mt-1' >LED2</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led3, 3)}
-
                     <div className='text-s text-white mt-1' >LED3</div>
                 </div>
 
-
                 <div className="flex flex-col items-center">
                     {lightEle(led4, 4)}
-
                     <div className='text-s text-white mt-1' >LED4</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led5, 5)}
-
                     <div className='text-s text-white mt-1' >LED5</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led6, 6)}
-
                     <div className='text-s text-white mt-1' >LED6</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led7, 7)}
-
                     <div className='text-s text-white mt-1' >LED7</div>
                 </div>
 
                 <div className="flex flex-col items-center">
                     {lightEle(led8, 8)}
-
                     <div className='text-s text-white mt-1' >LED8</div>
                 </div>
 
-
                 <div className="flex flex-col items-center">
                     {lightEle(led9, 9)}
-
                     <div className='text-s text-white mt-1' >LED9</div>
+                </div>
+
+                <div className="flex flex-col items-center">
+                    {lightEle(led10, 10)}
+                    <div className='text-s text-white mt-1' >LED10</div>
+                </div>
+
+                <div className="flex flex-col items-center">
+                    {lightEle(led11, 11)}
+                    <div className='text-s text-white mt-1' >LED11</div>
                 </div>
             </div>
         </div>

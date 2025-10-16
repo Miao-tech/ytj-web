@@ -3,63 +3,26 @@ import { useSelector } from 'react-redux'
 import {
     APIGetDistance,
     APIGetLight,
-    APIGetTemperature,
-    APIGetGesture
+    APIGetTemperature
 } from "../request/api";
 
 function SensorNew() {
-    const gestureSensor = useSelector((state) => state.integratedMachine.gestureSensor)
     const infraredSensor = useSelector((state) => state.integratedMachine.infraredSensor)
     const lightIntensitySensor = useSelector((state) => state.integratedMachine.lightIntensitySensor)
     const temperature = useSelector((state) => state.integratedMachine.temperature)
     const humidity = useSelector((state) => state.integratedMachine.humidity)
+    const buzzer = useSelector((state) => state.integratedMachine.buzzer)
 
-    const [loading1, setLoading1] = useState(false)
     const [loading2, setLoading2] = useState(false)
     const [loading3, setLoading3] = useState(false)
     const [loading4, setLoading4] = useState(false)
     const [loading5, setLoading5] = useState(false)
+    const [loading6, setLoading6] = useState(false)
     
     // 🕐 新增：自动刷新相关状态
     const [autoRefresh, setAutoRefresh] = useState(true)
     const [lastUpdateTime, setLastUpdateTime] = useState(new Date())
     const [nextUpdateCountdown, setNextUpdateCountdown] = useState(60)
-
-    // 手势传感器数值转换成文本
-    const [gestureSensorText, setGestureSensorText] = useState("-")
-    useEffect(() => {
-        switch (gestureSensor) {
-            case 1:
-                setGestureSensorText("手势1")
-                break;
-            case 2:
-                setGestureSensorText("手势2")
-                break;
-            case 3:
-                setGestureSensorText("手势3")
-                break;
-            case 4:
-                setGestureSensorText("手势4")
-                break;
-            case 5:
-                setGestureSensorText("手势5")
-                break;
-            case 6:
-                setGestureSensorText("手势6")
-                break;
-            case 7:
-                setGestureSensorText("手势7")
-                break;
-            case 8:
-                setGestureSensorText("手势8")
-                break;
-            case 9:
-                setGestureSensorText("手势9")
-                break;
-            default:
-                setGestureSensorText("-")
-        };
-    }, [gestureSensor]);
 
     // 🕐 新增：统一的传感器数据刷新函数
     const refreshAllSensors = async (isAutoRefresh = false) => {
@@ -73,7 +36,6 @@ function SensorNew() {
             // 并行获取所有传感器数据
             const promises = [
                 APIGetTemperature(),
-                APIGetGesture(), 
                 APIGetLight(),
                 APIGetDistance()
             ];
@@ -134,14 +96,15 @@ function SensorNew() {
                 case 'temperature':
                     await APIGetTemperature();
                     break;
-                case 'gesture':
-                    await APIGetGesture();
-                    break;
                 case 'light':
                     await APIGetLight();
                     break;
                 case 'distance':
                     await APIGetDistance();
+                    break;
+                case 'buzzer':
+                    // 蜂鸣器数据是被动接收的，没有主动刷新API
+                    console.log('🔔 蜂鸣器数据通过WebSocket被动接收，无需主动刷新');
                     break;
                 default:
                     console.error('未知传感器类型:', sensorType);
@@ -290,36 +253,13 @@ function SensorNew() {
                     </div>
                 </div>
 
-                {/* 手势传感器 */}
-                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
-                    <div className="flex flex-row">
-                        {iconEle('icon-a-shoushoushi', 'rgb(97, 175, 91)', 'rgb(214, 230, 214)')}
-
-                        <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-white" >手势传感器</div>
-                            <div className="text-2xl font-mono font-bold text-white">
-                                {gestureSensorText}
-                            </div>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                            {
-                                loading1 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
-                                    :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('gesture', setLoading1)}></span>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                {/* 红外传感器 */}
+                {/* 超声波传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
                         {iconEle('icon-act006', 'rgb(149, 48, 173)', 'rgb(225, 205, 231)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-white" >红外传感器</div>
+                            <div className="text-m text-white" >超声波传感器</div>
                             <div className="text-2xl font-mono font-bold text-white">
                                 {infraredSensor}
                                 <span className="text-white text-sm ml-1">cm</span>
@@ -332,6 +272,29 @@ function SensorNew() {
                                     <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
                                     <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('distance', setLoading2)}></span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                {/* 蜂鸣器传感器 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <div className="flex flex-row">
+                        {iconEle('icon-a-cellimage_huaban1fuben94', 'rgb(255, 165, 0)', 'rgb(255, 235, 205)')}
+
+                        <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
+                            <div className="text-m text-white" >蜂鸣器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
+                                {buzzer}
+                            </div>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                            {
+                                loading6 ?
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
+                                    :
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('buzzer', setLoading6)}></span>
                             }
                         </div>
                     </div>

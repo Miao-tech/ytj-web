@@ -18,9 +18,10 @@ function SignalGenerator() {
     });
     const dispatch = useDispatch();
 
-    // 支持的电压档位
+    // 支持的频率档位
     const freqOptions = [
         { value: 1, label: '1 Hz' },
+        { value: 10, label: '10 Hz' },
         { value: 100, label: '100 Hz' },
     ];
 
@@ -40,7 +41,8 @@ function SignalGenerator() {
 
     // 格式化频率显示
     const formatFrequency = (freq) => {
-        if (freq < 1000) return `${freq} Hz`;
+        if (freq >= 1000) return `${freq / 1000} kHz`;
+        return `${freq} Hz`;
     };
 
     // 波形预览SVG生成
@@ -341,7 +343,7 @@ function SignalGenerator() {
                             <span className="font-mono text-blue-600">{formatFrequency(frequency)}</span>
                         </div>
                         {/* 自定义ToggleGroup样式 */}
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                             {freqOptions.map((option) => (
                                 <button
                                     key={option.value}
