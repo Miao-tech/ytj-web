@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { APISetWaveform, APISignalGeneratorStop } from '../request/api';
+import { APISetWaveform, APISignalGeneratorStop, APIUpdateSignalGeneratorConfig } from '../request/api';
 import { setSignalGeneratorData } from '../store_integrated_machine_slice';
 import wsManager from '../request/io';
 
@@ -30,6 +30,11 @@ function SignalGenerator() {
     const [amplitude] = useState(1.0);
     const [dcOffset] = useState(0.0);
     const [outputEnabled, setOutputEnabled] = useState(false);
+
+    // 🔍 调试：监听 outputEnabled 变化
+    useEffect(() => {
+        console.log(`🔍 [DEBUG] outputEnabled 状态变化: ${outputEnabled}`);
+    }, [outputEnabled]);
     // const [customFrequency, setCustomFrequency] = useState('1000');
 
     // 波形选项（只保留正弦波）
@@ -147,14 +152,26 @@ function SignalGenerator() {
         console.log(`波形切换为: ${newWaveform}`);
     };
 
-    // 修改频率切换函数（仅在关闭状态下允许切换）
-    const handleFrequencyChange = (newFrequency) => {
-        if (outputEnabled) {
-            console.log('输出开启时不允许切换频率档位');
-            return;
-        }
+    // 修改频率切换函数（允许在任何时候切换）
+    const handleFrequencyChange = async (newFrequency) => {
+        console.log(`🔘 handleFrequencyChange被调用! 新频率: ${newFrequency}Hz, 当前outputEnabled: ${outputEnabled}`);
         setFrequency(newFrequency);
         console.log(`频率档位切换为: ${newFrequency}Hz`);
+
+        // 如果输出已开启,立即发送新的频率设置请求
+        if (outputEnabled) {
+            console.log('输出已开启,发送频率设置请求到硬件...');
+            const success = await controlSignalGenerator('set_waveform', {
+                waveform: waveform,
+                frequency: newFrequency
+            });
+            console.log('频率设置结果:', success ? '成功' : '失败');
+        } else {
+            console.log('输出关闭,仅更新后端配置(不触发硬件)...');
+            // 输出关闭时,只更新后端状态,不发送硬件指令
+            await APIUpdateSignalGeneratorConfig(waveform, newFrequency);
+            console.log('后端配置已更新');
+        }
     };
 
     // 🌊 处理WebSocket消息中的信号发生器状态同步
@@ -347,13 +364,11 @@ function SignalGenerator() {
                         </div>
 
                         {/* // 添加提示信息 */}
-                        {outputEnabled && (
-                            <div className="text-xs text-orange-600 mt-2 text-center">
-                                输出开启时无法切换设置，请先关闭输出
+                        {outputEnabled ? (
+                            <div className="text-xs text-green-600 mt-2 text-center">
+                                切换频率将立即应用到输出
                             </div>
-                        )}
-
-                        {!outputEnabled && (
+                        ) : (
                             <div className="text-xs text-gray-500 mt-2 text-center">
                                 选择波形和频率后点击开启输出
                             </div>

@@ -136,7 +136,6 @@ function Led() {
     }
 
     const lightEle = (enable, number) => {
-        enable=false;
         return <button
             className={`h-12 w-12 rounded-full border-2 transition-all ${
                 enable

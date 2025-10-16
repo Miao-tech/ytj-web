@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { APIPowerSupplyOff, APIPowerSupplyOn, APISetVoltage } from '../request/api';
+import { APIPowerSupplyOff, APIPowerSupplyOn, APISetVoltage, APIUpdatePowerSupplyConfig } from '../request/api';
 import { setPowerSupplyData } from '../store_integrated_machine_slice';
 import wsManager from '../request/io';
 
@@ -43,6 +43,7 @@ function PowerSupply() {
             case 'output':
                 if (value) {
                     await APIPowerSupplyOn();
+                    await APISetVoltage(voltage)
                 } else {
                     await APIPowerSupplyOff();
                 }
@@ -97,10 +98,16 @@ function PowerSupply() {
         setVoltage(newVoltage);
         console.log(`电压档位切换为: ${newVoltage}V`);
 
-        // 如果输出已开启，立即发送电压设置请求
+        // 如果输出已开启，立即发送电压设置请求到硬件
         if (outputEnabled) {
+            console.log('输出已开启,发送电压设置请求到硬件...');
             const success = await controlPowerSupply('voltage', newVoltage);
             console.log('电压设置结果:', success ? '成功' : '失败');
+        } else {
+            console.log('输出关闭,仅更新后端配置(不触发硬件)...');
+            // 输出关闭时,只更新后端状态,不发送硬件指令
+            await APIUpdatePowerSupplyConfig(newVoltage);
+            console.log('后端配置已更新');
         }
     };
 
@@ -266,7 +273,6 @@ function PowerSupply() {
                                             ? 'bg-blue-500 text-white shadow-md'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }
-                                        ${!outputEnabled && 'opacity-50 cursor-not-allowed'}
                                         ${isAdjusting && voltage === option.value && 'opacity-75'}
                                     `}
                                 >

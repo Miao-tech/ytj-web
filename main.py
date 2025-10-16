@@ -553,6 +553,27 @@ async def set_voltage(voltage: float, exchange: aio_pika.Exchange = Depends(get_
         return {"status": "success", "message": f"电压设置为 {voltage}V"}
     return {"status": "error", "message": "无法为该电压值生成指令"}
 
+@app.get("/api/update_power_supply_config")
+async def update_power_supply_config(voltage: float):
+    """仅更新电源配置到后端状态,不发送硬件指令"""
+    global power_supply_state
+
+    # 验证电压范围
+    if not (0 <= voltage <= 12.0):
+        return {"status": "error", "message": "电压超出范围 (0-12.0V)"}
+
+    # 验证电压是否为支持的档位
+    supported_voltages = [2.0, 3.0, 5.0, 12.0]
+    if voltage not in supported_voltages:
+        return {"status": "error", "message": f"不支持的电压档位(仅支持 {supported_voltages})"}
+
+    # 只更新后端状态,不改变outputEnabled,不发送硬件指令
+    power_supply_state["setVoltage"] = voltage
+
+    logger.info(f"🔋 电源配置已更新(仅后端): {power_supply_state}")
+    await save_device_state(last_stream_common, power_supply_dict=power_supply_state)
+    return {"status": "success", "message": f"配置已更新: {voltage}V (未触发硬件)"}
+
 @app.get("/api/set_waveform")
 async def set_waveform(waveform: str, frequency: int, exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
     global signal_generator_state
@@ -582,6 +603,25 @@ async def signal_generator_stop(exchange: aio_pika.Exchange = Depends(get_mq_exc
     logger.info(f"🌊 信号发生器已停止: {signal_generator_state}")
     await save_device_state(last_stream_common, signal_generator_dict=signal_generator_state)
     return {"status": "success", "message": "信号发生器已停止"}
+
+@app.get("/api/update_signal_generator_config")
+async def update_signal_generator_config(waveform: str, frequency: int):
+    """仅更新信号发生器配置到后端状态,不发送硬件指令"""
+    global signal_generator_state
+
+    # 验证参数
+    waveform_codes = {"sine": 0x00}
+    freq_codes = {1: 0x01, 10: 0x0A, 100: 0x64}
+    if waveform.lower() not in waveform_codes or frequency not in freq_codes:
+        return {"status": "error", "message": "无效的波形或频率（仅支持正弦波,频率1/10/100Hz）"}
+
+    # 只更新后端状态,不改变outputEnabled,不发送硬件指令
+    signal_generator_state["waveform"] = waveform.lower()
+    signal_generator_state["frequency"] = frequency
+
+    logger.info(f"🌊 信号发生器配置已更新(仅后端): {signal_generator_state}")
+    await save_device_state(last_stream_common, signal_generator_dict=signal_generator_state)
+    return {"status": "success", "message": f"配置已更新: {waveform}波, {frequency}Hz (未触发硬件)"}
 
 @app.get("/health")
 async def health():

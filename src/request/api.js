@@ -51,6 +51,10 @@ export const APIPowerSupplyOff = () => request('/api/power_supply_off');
 // 设置电压
 export const APISetVoltage = (voltage) => request('/api/set_voltage?voltage=' + voltage);
 
+// 更新电源配置(仅更新后端状态,不发送硬件指令)
+export const APIUpdatePowerSupplyConfig = (voltage) =>
+    request(`/api/update_power_supply_config?voltage=${voltage}`);
+
 // 设置波形
 export const APISetWaveform = (waveform = null, frequency = null) => {
     if (waveform === null && frequency === null) {
@@ -62,6 +66,10 @@ export const APISetWaveform = (waveform = null, frequency = null) => {
 
 // 信号发生器停止
 export const APISignalGeneratorStop = () => request('/api/signal_generator_stop');
+
+// 更新信号发生器配置(仅更新后端状态,不发送硬件指令)
+export const APIUpdateSignalGeneratorConfig = (waveform, frequency) =>
+    request(`/api/update_signal_generator_config?waveform=${waveform}&frequency=${frequency}`);
 
 // 触发蜂鸣器
 export const APITriggerBuzzer = () => request('/api/trigger_buzzer');
