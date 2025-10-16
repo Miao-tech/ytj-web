@@ -11,6 +11,11 @@ const initialState = {
     lightIntensitySensor: 0,
     buzzer: 0, // 蜂鸣器时间（0-255ms）
 
+    // 红外传感器 (3个独立的传感器，使用位掩码检测)
+    infraredSensor1: false, // Bit 0 (0x01)
+    infraredSensor2: false, // Bit 1 (0x02)
+    infraredSensor3: false, // Bit 2 (0x04)
+
     // LED
     led1: false,
     led2: false,
@@ -144,6 +149,25 @@ export const storeIntegratedMachineSlice = createSlice({
         // 设置信号发生器输出状态
         setSignalGeneratorOutput: (state, action) => {
             state.signalGenerator.outputEnabled = action.payload;
+        },
+
+        // 设置3个红外传感器状态
+        setInfraredSensors: (state, action) => {
+            const { sensor1, sensor2, sensor3 } = action.payload;
+            if (sensor1 !== undefined) state.infraredSensor1 = sensor1;
+            if (sensor2 !== undefined) state.infraredSensor2 = sensor2;
+            if (sensor3 !== undefined) state.infraredSensor3 = sensor3;
+        },
+
+        // 设置单个红外传感器状态
+        setInfraredSensor1: (state, action) => {
+            state.infraredSensor1 = action.payload;
+        },
+        setInfraredSensor2: (state, action) => {
+            state.infraredSensor2 = action.payload;
+        },
+        setInfraredSensor3: (state, action) => {
+            state.infraredSensor3 = action.payload;
         }
     },
 })
@@ -164,6 +188,10 @@ export const {
     setPowerSupplyOutput,
     setPowerSupplyConnection,
     setSignalGeneratorData,
-    setSignalGeneratorOutput
+    setSignalGeneratorOutput,
+    setInfraredSensors,
+    setInfraredSensor1,
+    setInfraredSensor2,
+    setInfraredSensor3
 } = storeIntegratedMachineSlice.actions
 export default storeIntegratedMachineSlice.reducer

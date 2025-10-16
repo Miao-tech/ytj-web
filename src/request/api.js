@@ -66,4 +66,7 @@ export const APISignalGeneratorStop = () => request('/api/signal_generator_stop'
 // 触发蜂鸣器
 export const APITriggerBuzzer = () => request('/api/trigger_buzzer');
 
+// 获取3个红外传感器状态（三合一传感器，只需获取状态，不需要启动/停止）
+export const APIGetInfraredSensors = () => request('/api/get_infrared_sensors');
+
 // export default {}

@@ -505,6 +505,13 @@ async def trigger_buzzer(exchange: aio_pika.Exchange = Depends(get_mq_exchange))
     await restore_previous_device(exchange)
     return {"status": "success", "message": "成功触发蜂鸣器"}
 
+@app.get("/api/get_infrared_sensors")
+async def get_infrared_sensors(exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
+    """获取3个红外传感器状态 (发送 0x0b 0x00 0x01 0xfe)"""
+    await send_serial_command(bytes([0x0B, 0x00, 0x01, 0xFE]), exchange)
+    await restore_previous_device(exchange)
+    return {"status": "success", "message": "成功发送红外传感器状态读取指令"}
+
 @app.get("/api/power_supply_on")
 async def power_supply_on(exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
     global power_supply_state

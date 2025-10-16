@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector } from 'react-redux'
-import { Bell, Sun, Thermometer, Droplets, Waves } from 'lucide-react'
+import { Bell, Sun, Thermometer, Droplets, Waves, Eye, EyeOff } from 'lucide-react'
 import {
     APIGetDistance,
     APIGetLight,
     APIGetTemperature,
-    APITriggerBuzzer
+    APITriggerBuzzer,
+    APIGetInfraredSensors
 } from "../request/api";
 
 function SensorNew() {
@@ -14,12 +15,17 @@ function SensorNew() {
     const temperature = useSelector((state) => state.integratedMachine.temperature)
     const humidity = useSelector((state) => state.integratedMachine.humidity)
     const buzzer = useSelector((state) => state.integratedMachine.buzzer)
+    
+    // 3个红外传感器状态
+    const infraredSensor1 = useSelector((state) => state.integratedMachine.infraredSensor1)
+    const infraredSensor2 = useSelector((state) => state.integratedMachine.infraredSensor2)
+    const infraredSensor3 = useSelector((state) => state.integratedMachine.infraredSensor3)
 
     const [loading2, setLoading2] = useState(false)
     const [loading3, setLoading3] = useState(false)
     const [loading4, setLoading4] = useState(false)
     const [loading5, setLoading5] = useState(false)
-    const [loading6, setLoading6] = useState(false)
+    const [loading7, setLoading7] = useState(false) // 红外统一刷新
     
     // 🕐 新增：自动刷新相关状态
     const [autoRefresh, setAutoRefresh] = useState(true)
@@ -39,7 +45,8 @@ function SensorNew() {
             const promises = [
                 APIGetTemperature(),
                 APIGetLight(),
-                APIGetDistance()
+                APIGetDistance(),
+                APIGetInfraredSensors()
             ];
 
             await Promise.all(promises);
@@ -108,6 +115,11 @@ function SensorNew() {
                     // 蜂鸣器触发 - 发送命令使其响0.01秒
                     await APITriggerBuzzer();
                     console.log('🔔 蜂鸣器已触发');
+                    break;
+                case 'infraredSensors':
+                    // 获取3个红外传感器状态
+                    await APIGetInfraredSensors();
+                    console.log('👁️ 红外传感器状态已刷新');
                     break;
                 default:
                     console.error('未知传感器类型:', sensorType);
@@ -302,6 +314,81 @@ function SensorNew() {
                         </div> */}
                     </div>
                 </div>
+            </div>
+
+            {/* 第二行：三合一红外传感器组 */}
+            <div className='grid grid-cols-5 sm:container p-6 rounded-lg shadow-sm border mt-4' style={{ backgroundColor: "#252a3d" }}>
+                {/* 红外传感器1 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <div className="flex flex-row items-center">
+                        {lucideIconEle(
+                            infraredSensor1 ? EyeOff : Eye,
+                            infraredSensor1 ? 'rgb(239, 68, 68)' : 'rgb(34, 197, 94)',
+                            infraredSensor1 ? 'rgb(254, 226, 226)' : 'rgb(220, 252, 231)'
+                        )}
+                        <div style={{ marginRight: "20px", textAlign: "left" }}>
+                            <div className="text-m text-white">红外传感器 A</div>
+                            <div className="flex items-center gap-2">
+                                <div className={`text-xl font-bold ${infraredSensor1 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {infraredSensor1 ? '遮挡' : '正常'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 红外传感器2 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <div className="flex flex-row items-center">
+                        {lucideIconEle(
+                            infraredSensor2 ? EyeOff : Eye,
+                            infraredSensor2 ? 'rgb(239, 68, 68)' : 'rgb(34, 197, 94)',
+                            infraredSensor2 ? 'rgb(254, 226, 226)' : 'rgb(220, 252, 231)'
+                        )}
+                        <div style={{ marginRight: "20px", textAlign: "left" }}>
+                            <div className="text-m text-white">红外传感器 B</div>
+                            <div className="flex items-center gap-2">
+                                <div className={`text-xl font-bold ${infraredSensor2 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {infraredSensor2 ? '遮挡' : '正常'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 红外传感器3 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <div className="flex flex-row items-center">
+                        {lucideIconEle(
+                            infraredSensor3 ? EyeOff : Eye,
+                            infraredSensor3 ? 'rgb(239, 68, 68)' : 'rgb(34, 197, 94)',
+                            infraredSensor3 ? 'rgb(254, 226, 226)' : 'rgb(220, 252, 231)'
+                        )}
+                        <div style={{ marginRight: "20px", textAlign: "left" }}>
+                            <div className="text-m text-white">红外传感器 C</div>
+                            <div className="flex items-center gap-2">
+                                <div className={`text-xl font-bold ${infraredSensor3 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {infraredSensor3 ? '遮挡' : '正常'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 统一刷新按钮 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                {
+                    loading7 ?
+                            <span className={'iconfont icon-gengxin'} style={{ fontSize: '32px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
+                            :
+                            <span className={'iconfont icon-gengxin'} style={{ fontSize: '32px', cursor: "pointer", color: 'white', transition: 'all 0.3s' }}
+                                onClick={() => refreshSingleSensor('infraredSensors', setLoading7)}
+                            ></span>
+                    }
+                </div>
+
+                {/* 空白占位 */}
+                <div></div>
             </div>
 
             {/* 🕐 新增：添加旋转动画的CSS */}

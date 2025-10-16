@@ -11,7 +11,11 @@ import {
     setMultimeterData,
     setPowerSupplyData,
     setSignalGeneratorData,
-    setOscilloscopeRunning
+    setOscilloscopeRunning,
+    setInfraredSensors,
+    setInfraredSensor1,
+    setInfraredSensor2,
+    setInfraredSensor3
 } from '../store_integrated_machine_slice';
 
 import {
@@ -583,6 +587,24 @@ class WebSocketManager {
                         frequency: signalFreq,
                         description: '信号发生器数据'
                     };
+
+                case 0x0B: // 3个红外传感器数据
+                    const sensorStatus = packet[2]; // 传感器状态字节
+                    // 使用位掩码解析3个红外传感器状态
+                    const sensor1Blocked = (sensorStatus & 0x01) !== 0; // Bit 0
+                    const sensor2Blocked = (sensorStatus & 0x02) !== 0; // Bit 1  
+                    const sensor3Blocked = (sensorStatus & 0x04) !== 0; // Bit 2
+
+                    console.log(`👁️ 红外传感器状态: 传感器1=${sensor1Blocked ? '遮挡' : '正常'}, 传感器2=${sensor2Blocked ? '遮挡' : '正常'}, 传感器3=${sensor3Blocked ? '遮挡' : '正常'}`);
+                    
+                    return {
+                        type: 'infrared_sensors',
+                        sensor1: sensor1Blocked,
+                        sensor2: sensor2Blocked,
+                        sensor3: sensor3Blocked,
+                        description: '3个红外传感器数据'
+                    };
+
                 default:
                     console.warn(`⚠️ 未知的数据类型: 0x${packet[0].toString(16).padStart(2, '0').toUpperCase()}`);
                     return null;
@@ -663,6 +685,15 @@ class WebSocketManager {
                         value: null,
                         unit: null,
                         mode: 'RES' // 重置为默认电阻档
+                    }));
+                    break;
+                case 'infrared_sensors':
+                    console.log('👁️ 更新3个红外传感器状态:', result);
+                    // 更新3个红外传感器状态
+                    store.dispatch(setInfraredSensors({
+                        sensor1: result.sensor1,
+                        sensor2: result.sensor2,
+                        sensor3: result.sensor3
                     }));
                     break;
                 default:
