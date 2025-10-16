@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSelector } from 'react-redux'
+import { Bell, Sun, Thermometer, Droplets, Waves } from 'lucide-react'
 import {
     APIGetDistance,
     APIGetLight,
-    APIGetTemperature
+    APIGetTemperature,
+    APITriggerBuzzer
 } from "../request/api";
 
 function SensorNew() {
@@ -103,8 +105,9 @@ function SensorNew() {
                     await APIGetDistance();
                     break;
                 case 'buzzer':
-                    // 蜂鸣器数据是被动接收的，没有主动刷新API
-                    console.log('🔔 蜂鸣器数据通过WebSocket被动接收，无需主动刷新');
+                    // 蜂鸣器触发 - 发送命令使其响0.01秒
+                    await APITriggerBuzzer();
+                    console.log('🔔 蜂鸣器已触发');
                     break;
                 default:
                     console.error('未知传感器类型:', sensorType);
@@ -117,7 +120,7 @@ function SensorNew() {
         }
     };
 
-    const iconEle = (iconName, iconColor = "black", bgColor = "white") => <div style={{
+    const lucideIconEle = (IconComponent, iconColor = "black", bgColor = "white") => <div style={{
         height: "60px",
         width: "60px",
         borderRadius: "100px",
@@ -125,10 +128,9 @@ function SensorNew() {
         alignItems: "center",
         justifyContent: "center",
         marginRight: "10px",
-        background: bgColor,
-        color: iconColor
+        background: bgColor
     }}>
-        <span className={["iconfont", iconName].join(' ')} style={{ fontSize: '30px' }}></span>
+        <IconComponent size={30} color={iconColor} />
     </div>
 
     return (
@@ -181,10 +183,34 @@ function SensorNew() {
             </div>
 
             <div className='grid grid-cols-5 sm:container p-6 rounded-lg shadow-sm border' style={{ backgroundColor: "#252a3d" }}>
+                {/* 光强度传感器 */}
+                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
+                    <div className="flex flex-row">
+                        {lucideIconEle(Sun, 'rgb(248, 195, 60)', 'rgb(245, 234, 205)')}
+
+                        <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
+                            <div className="text-m text-white" >光强度传感器</div>
+                            <div className="text-2xl font-mono font-bold text-white">
+                                {lightIntensitySensor}
+                                <span className="text-white text-sm ml-1">Lux</span>
+                            </div>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                            {
+                                loading3 ?
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
+                                    :
+                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('light', setLoading3)}></span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
                 {/* 温度传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
-                        {iconEle('icon-wenduji', 'rgb(245, 94, 80)', 'rgb(244, 214, 212)')}
+                        {lucideIconEle(Thermometer, 'rgb(245, 94, 80)', 'rgb(244, 214, 212)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
                             <div className="text-m text-white" >温度传感器</div>
@@ -208,7 +234,7 @@ function SensorNew() {
                 {/* 湿度传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
-                        {iconEle('icon-wenduji', 'rgb(78, 158, 240)', 'rgb(207, 225, 244)')}
+                        {lucideIconEle(Droplets, 'rgb(78, 158, 240)', 'rgb(207, 225, 244)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
                             <div className="text-m text-white" >湿度传感器</div>
@@ -229,34 +255,10 @@ function SensorNew() {
                     </div>
                 </div>
 
-                {/* 光强度传感器 */}
-                <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
-                    <div className="flex flex-row">
-                        {iconEle('icon-a-cellimage_huaban1fuben94', 'rgb(248, 195, 60)', 'rgb(245, 234, 205)')}
-
-                        <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
-                            <div className="text-m text-white" >光强度传感器</div>
-                            <div className="text-2xl font-mono font-bold text-white">
-                                {lightIntensitySensor}
-                                <span className="text-white text-sm ml-1">Lux</span>
-                            </div>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                            {
-                                loading3 ?
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
-                                    :
-                                    <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('light', setLoading3)}></span>
-                            }
-                        </div>
-                    </div>
-                </div>
-
                 {/* 超声波传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
-                        {iconEle('icon-act006', 'rgb(149, 48, 173)', 'rgb(225, 205, 231)')}
+                        {lucideIconEle(Waves, 'rgb(149, 48, 173)', 'rgb(225, 205, 231)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
                             <div className="text-m text-white" >超声波传感器</div>
@@ -280,23 +282,24 @@ function SensorNew() {
                 {/* 蜂鸣器传感器 */}
                 <div className="mx-auto flex max-w-xs flex-col" style={{ textAlign: "center" }}>
                     <div className="flex flex-row">
-                        {iconEle('icon-a-cellimage_huaban1fuben94', 'rgb(255, 165, 0)', 'rgb(255, 235, 205)')}
+                        {lucideIconEle(Bell, 'rgb(255, 87, 34)', 'rgb(255, 224, 178)')}
 
                         <div style={{ fontSize: '16px', marginRight: "20px", textAlign: "left" }}>
                             <div className="text-m text-white" >蜂鸣器</div>
                             <div className="text-2xl font-mono font-bold text-white">
-                                {buzzer}
+                                100
+                                <span className="text-white text-sm ml-1">ms</span>
                             </div>
                         </div>
 
-                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             {
                                 loading6 ?
                                     <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", animation: 'spin 1s linear infinite', color: 'white' }}></span>
                                     :
                                     <span className={'iconfont icon-gengxin'} style={{ fontSize: '16px', cursor: "pointer", color: 'white' }} onClick={() => refreshSingleSensor('buzzer', setLoading6)}></span>
                             }
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

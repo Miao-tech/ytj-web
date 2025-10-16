@@ -25,7 +25,7 @@
 
 - ✅ 扩展LED灯数量从9个增加到11个
 - ✅ 调整电源电压档位为更实用的固定值
-- ✅ 增加信号发生器的10Hz频率选项
+- ✅ 增加信号发生器的10Hz频率选项，仅支持正弦波
 - ✅ 修改传感器通信协议以避免冲突
 - ✅ 简化万用表为3个常用档位
 - ✅ 添加蜂鸣器传感器
@@ -215,6 +215,7 @@ case 0x09: // 电源数据
 
 **频率选项：从 1Hz/100Hz 扩展为 1Hz/10Hz/100Hz**
 **命令字节：从 0x30 改为 0x0A**
+**波形选项：仅支持正弦波（删除方波和三角波）**
 
 ### 🔧 前端修改
 
@@ -254,14 +255,15 @@ const initialState = {
 
 #### 文件：`main.py`
 
-**API 端点：`/api/set_waveform` (main.py:542-561)**
+**API 端点：`/api/set_waveform` (main.py:542-562)**
 
 ```python
 # 修改前
 freq_codes = {1: 0x01, 100: 0x64}
 command = bytes([0x30, waveform_code, freq_code, 0xFE])
 
-# 修改后
+# 修改后（只支持正弦波，波形代码固定为 0x00）
+waveform_codes = {"sine": 0x00}
 freq_codes = {1: 0x01, 10: 0x0A, 100: 0x64}
 command = bytes([0x0A, waveform_code, freq_code, 0xFE])
 ```
@@ -272,18 +274,16 @@ command = bytes([0x0A, waveform_code, freq_code, 0xFE])
 
 | 参数 | 选项 | 代码 |
 |------|------|------|
-| 波形 | sine (正弦波) | 0x01 |
-| | square (方波) | 0x02 |
-| | triangle (三角波) | 0x03 |
+| 波形 | sine (正弦波) | 0x00 |
 | 频率 | 1 Hz | 0x01 |
 | | 10 Hz | 0x0A |
 | | 100 Hz | 0x64 |
 
 **示例指令**
 ```
-正弦波 10Hz: 0x0A 0x01 0x0A 0xFE
-方波 10Hz:   0x0A 0x02 0x0A 0xFE
-三角波 10Hz: 0x0A 0x03 0x0A 0xFE
+正弦波 1Hz:   0x0A 0x00 0x01 0xFE
+正弦波 10Hz:  0x0A 0x00 0x0A 0xFE
+正弦波 100Hz: 0x0A 0x00 0x64 0xFE
 ```
 
 ### 🔍 WebSocket 数据解析
@@ -292,16 +292,15 @@ command = bytes([0x0A, waveform_code, freq_code, 0xFE])
 
 **信号发生器数据解析 (case 0x0A)**
 ```javascript
-case 0x0A: // 信号发生器数据
+case 0x0A: // 信号发生器数据（仅支持正弦波）
     const waveformCode = packet[1];
     const freq = packet[2];
     const signalFreq = freq;
 
-    let waveformType = 'sine';
-    if (waveformCode === 0x01) waveformType = 'sine';
-    else if (waveformCode === 0x02) waveformType = 'square';
-    else if (waveformCode === 0x03) waveformType = 'triangle';
+    // 只支持正弦波（0x01）
+    const waveformType = 'sine';
 
+    console.log(`🌊 信号发生器数据: ${waveformType}, ${signalFreq}Hz`);
     return {
         type: 'signal_generator',
         waveform: waveformType,
@@ -471,6 +470,14 @@ async def get_temperature(exchange: aio_pika.Exchange = Depends(get_mq_exchange)
 **协议**: `0x06 0x00 [时间] 0xFE`
 **数据范围**: 0-255
 **说明**: 蜂鸣器时间，通过 WebSocket 被动接收
+
+**触发功能**:
+- **触发命令**: `0x06 0x00 0x10 0xFE`
+- **响应时长**: 0.01秒 (0x10 = 16 = 0.01s × 1600)
+- **用途**: 点击蜂鸣器图标时触发蜂鸣，用于测试或提示
+
+**API 端点**: `/api/trigger_buzzer` (GET)
+**前端调用**: 点击蜂鸣器传感器图标即可触发
 
 ### 🔍 WebSocket 数据解析
 
@@ -787,14 +794,12 @@ LED11 打开: 0x1A 0x00 0x01 0xFE  关闭: 0x1A 0x00 0x00 0xFE
 设置12.0V: 0x09 0x00 0x78 0xFE
 ```
 
-#### 信号发生器命令
+#### 信号发生器命令（仅正弦波）
 
 ```
-正弦波 1Hz:   0x0A 0x01 0x01 0xFE
-正弦波 10Hz:  0x0A 0x01 0x0A 0xFE
-正弦波 100Hz: 0x0A 0x01 0x64 0xFE
-方波 10Hz:    0x0A 0x02 0x0A 0xFE
-三角波 10Hz:  0x0A 0x03 0x0A 0xFE
+正弦波 1Hz:   0x0A 0x00 0x01 0xFE
+正弦波 10Hz:  0x0A 0x00 0x0A 0xFE
+正弦波 100Hz: 0x0A 0x00 0x64 0xFE
 ```
 
 #### 传感器查询命令
@@ -803,6 +808,12 @@ LED11 打开: 0x1A 0x00 0x01 0xFE  关闭: 0x1A 0x00 0x00 0xFE
 光强度: 0x05 0x00 0x01 0xFE
 温湿度: 0x0D 0x00 0x01 0xFE
 超声波: 0x0C 0x00 0x01 0xFE
+```
+
+#### 蜂鸣器触发命令
+
+```
+触发蜂鸣器(响0.01秒): 0x06 0x00 0x10 0xFE
 ```
 
 #### 万用表控制命令
@@ -839,9 +850,10 @@ curl http://localhost:8000/api/set_voltage?voltage=12.0
 ### 3. 信号发生器测试
 
 ```bash
-# 测试 10Hz 频率
+# 测试不同频率的正弦波
+curl "http://localhost:8000/api/set_waveform?waveform=sine&frequency=1"
 curl "http://localhost:8000/api/set_waveform?waveform=sine&frequency=10"
-curl "http://localhost:8000/api/set_waveform?waveform=square&frequency=10"
+curl "http://localhost:8000/api/set_waveform?waveform=sine&frequency=100"
 ```
 
 ### 4. 传感器模块测试
@@ -850,6 +862,9 @@ curl "http://localhost:8000/api/set_waveform?waveform=square&frequency=10"
 # 测试新协议
 curl http://localhost:8000/api/get_light      # 0x05
 curl http://localhost:8000/api/get_temperature # 0x0D
+
+# 测试蜂鸣器触发
+curl http://localhost:8000/api/trigger_buzzer  # 触发蜂鸣器响0.01秒
 ```
 
 ### 5. 万用表模块测试

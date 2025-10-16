@@ -63,4 +63,7 @@ export const APISetWaveform = (waveform = null, frequency = null) => {
 // 信号发生器停止
 export const APISignalGeneratorStop = () => request('/api/signal_generator_stop');
 
+// 触发蜂鸣器
+export const APITriggerBuzzer = () => request('/api/trigger_buzzer');
+
 // export default {}

@@ -32,11 +32,9 @@ function SignalGenerator() {
     const [outputEnabled, setOutputEnabled] = useState(false);
     // const [customFrequency, setCustomFrequency] = useState('1000');
 
-    // 波形选项
+    // 波形选项（只保留正弦波）
     const waveformOptions = [
-        { value: 'sine', label: '正弦波', icon: 'icon-zhengxianquxian' },
-        { value: 'square', label: '方波', icon: 'icon-fangbo-01' },
-        { value: 'triangle', label: '三角波', icon: 'icon-bolangxian' }
+        { value: 'sine', label: '正弦波', icon: 'icon-zhengxianquxian' }
     ];
 
     // 格式化频率显示
@@ -45,7 +43,7 @@ function SignalGenerator() {
         return `${freq} Hz`;
     };
 
-    // 波形预览SVG生成
+    // 波形预览SVG生成（仅正弦波）
     const renderWaveformPreview = () => {
         const width = 200;
         const height = 80;
@@ -54,19 +52,12 @@ function SignalGenerator() {
 
         for (let i = 0; i <= numPoints; i++) {
             const x = (i / numPoints) * width;
-            let y = height / 2;
-
             const t = (i / numPoints) * Math.PI * 4;
             const amplitude_px = (height / 2 - 5) * (amplitude / 5);
             const offset_px = dcOffset * height / 6;
 
-            if (waveform === 'sine') {
-                y = height / 2 + Math.sin(t) * amplitude_px + offset_px;
-            } else if (waveform === 'square') {
-                y = height / 2 + (Math.sin(t) > 0 ? -amplitude_px : amplitude_px) + offset_px;
-            } else if (waveform === 'triangle') {
-                y = height / 2 + ((Math.abs(((t / Math.PI) % 2) - 1) * 2 - 1) * amplitude_px) + offset_px;
-            }
+            // 只渲染正弦波
+            const y = height / 2 + Math.sin(t) * amplitude_px + offset_px;
 
             points.push({ x: Math.floor(x), y: Math.max(0, Math.min(height, Math.floor(y))) });
         }
@@ -88,7 +79,7 @@ function SignalGenerator() {
                 {/* 中心线 */}
                 <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="#666" strokeWidth="1" strokeDasharray="3,3" />
 
-                {/* 波形 */}
+                {/* 正弦波形 */}
                 <path
                     d={pathCommands}
                     fill="none"
@@ -313,19 +304,13 @@ function SignalGenerator() {
 
                     {/* 波形选择 */}
                     <div className="mb-6">
-                        <label className="block text-sm font-medium text-white mb-3">波形选择</label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <label className="block text-sm font-medium text-white mb-3">波形类型</label>
+                        <div className="flex justify-center">
                             {waveformOptions.map((option) => (
                                 <button
                                     key={option.value}
                                     onClick={() => handleWaveformChange(option.value)}
-                                    className={`
-                                        p-3 rounded-md text-sm font-medium transition-all duration-200 flex flex-col items-center
-                                        ${waveform === option.value
-                                            ? 'bg-blue-500 text-white shadow-md'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                        }
-                                    `}
+                                    className="w-full p-3 rounded-md text-sm font-medium bg-blue-500 text-white shadow-md flex flex-col items-center cursor-default"
                                 >
                                     <span className="text-lg mb-1">
                                         <span className={["iconfont", option.icon].join(' ')} style={{ fontSize: '18px' }}></span>
@@ -389,14 +374,14 @@ function SignalGenerator() {
                     {/* 参数显示 */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-300 mb-1">波形类型</div>
-                            <div className="text-sm font-semibold text-white">
+                            <div className="text-xs text-gray-400 mb-1">波形类型</div>
+                            <div className="text-sm font-semibold text-gray-500">
                                 {waveformOptions.find(w => w.value === waveform)?.label}
                             </div>
                         </div>
 
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-300 mb-1">频率</div>
+                            <div className="text-xs text-gray-400 mb-1">频率</div>
                             <div className="text-sm font-semibold text-blue-600">
                                 {formatFrequency(frequency)}
                             </div>
@@ -404,7 +389,7 @@ function SignalGenerator() {
 
 
                         <div className="bg-gray-50 p-3 rounded">
-                            <div className="text-xs text-gray-300 mb-1">输出状态</div>
+                            <div className="text-xs text-gray-400 mb-1">输出状态</div>
                             <div className={`text-sm font-semibold ${outputEnabled ? 'text-green-600' : 'text-gray-500'}`}>
                                 {outputEnabled ? '运行中' : '已停止'}
                             </div>

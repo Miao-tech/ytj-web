@@ -568,21 +568,13 @@ class WebSocketManager {
                         voltage: voltage,
                         description: '电源数据'
                     };
-                case 0x0A: // 信号发生器数据 (假设0x30是信号发生器数据的命令字节)
+                case 0x0A: // 信号发生器数据（仅支持正弦波）
                     const waveformCode = packet[1]; // 波形类型代码
                     const freq = packet[2];
                     const signalFreq = freq; // 频率
 
-                    // 根据代码确定波形类型
-                    let waveformType = 'sine';
-
-                    if (waveformCode === 0x01) {
-                        waveformType = 'sine';
-                    } else if (waveformCode === 0x02) {
-                        waveformType = 'square';
-                    } else if (waveformCode === 0x03) {
-                        waveformType = 'triangle';
-                    }
+                    // 只支持正弦波（0x01）
+                    const waveformType = 'sine';
 
                     console.log(`🌊 信号发生器数据: ${waveformType}, ${signalFreq}Hz`);
                     return {

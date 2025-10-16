@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect } from 'react'
+import { Lightbulb } from 'lucide-react'
 import { open_led, close_led } from '../store_integrated_machine_slice'
 import { APICloseLED, APIOpenLED } from '../request/api'
 import wsManager from '../request/io'
@@ -135,30 +136,28 @@ function Led() {
     }
 
     const lightEle = (enable, number) => {
-        return <div
-            className='mb-1'
+        enable=false;
+        return <button
+            className={`h-12 w-12 rounded-full border-2 transition-all ${
+                enable
+                    ? 'bg-yellow-400 border-yellow-500 shadow-lg'
+                    : 'bg-gray-200 border-gray-300 hover:bg-gray-300'
+            }`}
             style={{
-                position: 'relative',
-                background: 'rgb(249 249 249)',
-                width: '60px',
-                height: '60px',
-                borderRadius: '60px',
-                border: '2px solid rgb(205 205 205)'
+                boxShadow: enable ? '0 10px 25px -5px rgba(234, 179, 8, 0.5)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
             }}
             onClick={() => handleLedChange(number, !enable)}
         >
-            <div style={{
-                top: '-4px',
-                left: '8px',
-                position: 'absolute'
-            }}>
-                {
-                    enable ?
-                        <span className="iconfont icon-led-on" style={{ fontSize: '40px', color: "rgb(255 188 0)", cursor: "pointer" }}></span> :
-                        <span className="iconfont icon-led-off" style={{ fontSize: '40px', color: "#d1d1d1", cursor: "pointer" }}></span>
-                }
-            </div>
-        </div >
+            <Lightbulb
+                size={20}
+                color={enable ? 'rgb(133, 77, 14)' : 'rgb(107, 114, 128)'}
+                fill={enable ? 'rgb(133, 77, 14)' : 'none'}
+            />
+        </button>
     }
 
     return (
@@ -171,60 +170,60 @@ function Led() {
                 {/* <p className="text-sm text-gray-600">LED灯控制台</p> */}
             </div>
 
-            <div className='grid grid-cols-11 gap-2 sm:container pb-6 rounded-lg shadow-sm border pt-4' style={{ backgroundColor: "#252a3d" }}>
-                <div className="flex flex-col items-center">
+            <div className='grid grid-cols-11 gap-4 sm:container pb-6 rounded-lg shadow-sm border pt-4' style={{ backgroundColor: "#252a3d" }}>
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led1, 1)}
-                    <div className='text-s text-white mt-1' >LED1</div>
+                    <span className="text-xs text-gray-400">LED1</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led2, 2)}
-                    <div className='text-s text-white mt-1' >LED2</div>
+                    <span className="text-xs text-gray-400">LED2</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led3, 3)}
-                    <div className='text-s text-white mt-1' >LED3</div>
+                    <span className="text-xs text-gray-400">LED3</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led4, 4)}
-                    <div className='text-s text-white mt-1' >LED4</div>
+                    <span className="text-xs text-gray-400">LED4</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led5, 5)}
-                    <div className='text-s text-white mt-1' >LED5</div>
+                    <span className="text-xs text-gray-400">LED5</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led6, 6)}
-                    <div className='text-s text-white mt-1' >LED6</div>
+                    <span className="text-xs text-gray-400">LED6</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led7, 7)}
-                    <div className='text-s text-white mt-1' >LED7</div>
+                    <span className="text-xs text-gray-400">LED7</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led8, 8)}
-                    <div className='text-s text-white mt-1' >LED8</div>
+                    <span className="text-xs text-gray-400">LED8</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led9, 9)}
-                    <div className='text-s text-white mt-1' >LED9</div>
+                    <span className="text-xs text-gray-400">LED9</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led10, 10)}
-                    <div className='text-s text-white mt-1' >LED10</div>
+                    <span className="text-xs text-gray-400">LED10</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                     {lightEle(led11, 11)}
-                    <div className='text-s text-white mt-1' >LED11</div>
+                    <span className="text-xs text-gray-400">LED11</span>
                 </div>
             </div>
         </div>

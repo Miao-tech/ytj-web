@@ -498,6 +498,13 @@ async def get_light(exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
     await restore_previous_device(exchange)
     return {"status": "success", "message": "成功发送光照读取指令"}
 
+@app.get("/api/trigger_buzzer")
+async def trigger_buzzer(exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
+    """触发蜂鸣器，响0.1秒 (0x64 = 100 = 0.1s * 1000)"""
+    await send_serial_command(bytes([0x06, 0x00, 0x64, 0xFE]), exchange)
+    await restore_previous_device(exchange)
+    return {"status": "success", "message": "成功触发蜂鸣器"}
+
 @app.get("/api/power_supply_on")
 async def power_supply_on(exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
     global power_supply_state
@@ -542,12 +549,13 @@ async def set_voltage(voltage: float, exchange: aio_pika.Exchange = Depends(get_
 @app.get("/api/set_waveform")
 async def set_waveform(waveform: str, frequency: int, exchange: aio_pika.Exchange = Depends(get_mq_exchange)):
     global signal_generator_state
-    waveform_codes = {"sine": 0x01, "square": 0x02, "triangle": 0x03}
+    # 只支持正弦波，波形代码固定为 0x00
+    waveform_codes = {"sine": 0x00}
     freq_codes = {1: 0x01, 10: 0x0A, 100: 0x64}
     waveform_code = waveform_codes.get(waveform.lower())
     freq_code = freq_codes.get(frequency)
     if waveform_code is None or freq_code is None:
-        return {"status": "error", "message": "无效的波形或频率"}
+        return {"status": "error", "message": "无效的波形或频率（仅支持正弦波）"}
 
     # 更新信号发生器状态
     signal_generator_state["outputEnabled"] = True

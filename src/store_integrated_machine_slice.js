@@ -9,7 +9,7 @@ const initialState = {
     gestureSensor: 0,
     infraredSensor: 0, // 实际上是超声波传感器，变量名保持不变以保持兼容性
     lightIntensitySensor: 0,
-    buzzer: 0, // 蜂鸣器时间（0-255）
+    buzzer: 0, // 蜂鸣器时间（0-255ms）
 
     // LED
     led1: false,
